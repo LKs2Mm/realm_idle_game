@@ -1,4 +1,4 @@
-package com.example.realm_idle_game
+package com.lks2mm.realmidle
 
 import io.flutter.embedding.android.FlutterActivity
 
