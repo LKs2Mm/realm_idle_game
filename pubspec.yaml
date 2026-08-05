@@ -1,0 +1,27 @@
+name: realm_idle_game
+description: RPG idle medieval dark rúnico com classes, coleta, combate e criação.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  shared_preferences: ^2.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/medieval/
+    - assets/images/medieval/gathering/minerios/
+    - assets/images/medieval/gathering/madeiras/
+    - assets/images/medieval/gathering/peixes/
+    - assets/images/medieval/gathering/ferramentas/
