@@ -4,7 +4,6 @@ import 'package:realm_idle_game/core/theme/app_theme.dart';
 import 'package:realm_idle_game/features/processing/data/cooking_recipe_catalog.dart';
 import 'package:realm_idle_game/features/processing/data/skewer_recipe_catalog.dart';
 import 'package:realm_idle_game/features/processing/data/smelting_recipe_catalog.dart';
-import 'package:realm_idle_game/features/processing/models/processing_recipe.dart';
 import 'package:realm_idle_game/features/processing/screens/processing_panel.dart';
 import 'package:realm_idle_game/models/game_state.dart';
 
