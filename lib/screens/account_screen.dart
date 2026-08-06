@@ -555,17 +555,13 @@ class _SectionTitle extends StatelessWidget {
 
 class _IconSeal extends StatelessWidget {
   final IconData icon;
-  final Color color;
   final double size;
 
-  const _IconSeal({
-    required this.icon,
-    this.color = AppTheme.accentYellow,
-    this.size = 40,
-  });
+  const _IconSeal({required this.icon, this.size = 40});
 
   @override
   Widget build(BuildContext context) {
+    const color = AppTheme.accentYellow;
     return Container(
       width: size,
       height: size,
