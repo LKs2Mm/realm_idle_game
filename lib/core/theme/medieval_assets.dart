@@ -12,6 +12,8 @@ abstract final class MedievalAssets {
   static const String classArmory = 'assets/images/medieval/class-armory.png';
   static const String workshopHall = 'assets/images/medieval/workshop-hall.png';
   static const String worldMap = 'assets/images/medieval/world-map.png';
+  static const String alchemyLab =
+      'assets/images/medieval/gathering/oficinas/alchemy_lab.png';
 
   static String? forSkill(String skillId) => switch (skillId) {
     'mining' => mining,
@@ -31,6 +33,9 @@ abstract final class MedievalAssets {
 
   static String classAsset(String heroClassSaveKey) =>
       'assets/images/medieval/gathering/classes/$heroClassSaveKey.png';
+
+  static String workshopAsset(String workshopSaveKey) =>
+      'assets/images/medieval/gathering/oficinas/$workshopSaveKey.png';
 }
 
 class MedievalEmblem extends StatelessWidget {

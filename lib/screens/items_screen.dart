@@ -1020,10 +1020,20 @@ class _WorkshopsTab extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _ItemSeal(
-                  icon: _workshopIcon(workshop),
-                  color: AppTheme.smithingOrange,
-                  size: 42,
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: AppTheme.smithingOrange.withValues(alpha: 0.45),
+                    ),
+                  ),
+                  child: MedievalEmblem(
+                    assetPath: MedievalAssets.workshopAsset(workshop.saveKey),
+                    size: 42,
+                    semanticLabel: workshop.displayName,
+                  ),
                 ),
                 const SizedBox(width: 11),
                 Expanded(
@@ -1098,6 +1108,13 @@ class _AlchemyTab extends StatelessWidget {
       key: const PageStorageKey<String>('items-alchemy-scroll'),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
       children: [
+        const _MedievalSceneBanner(
+          key: ValueKey<String>('items-alchemy-banner'),
+          assetPath: MedievalAssets.alchemyLab,
+          label: 'LABORATÓRIO DE ALQUIMIA',
+          color: AppTheme.miningGreenLight,
+        ),
+        const SizedBox(height: 14),
         _ActiveBuffsPanel(buffs: buffs, potionById: potionById, builtAt: now),
         const SizedBox(height: 14),
         Text(
@@ -2084,11 +2101,4 @@ IconData _slotIcon(EquipmentSlot slot) => switch (slot) {
   EquipmentSlot.feet => Icons.ice_skating_outlined,
   EquipmentSlot.weapon => Icons.gavel_outlined,
   EquipmentSlot.offhand => Icons.shield_outlined,
-};
-
-IconData _workshopIcon(EquipmentWorkshop workshop) => switch (workshop) {
-  EquipmentWorkshop.blacksmith => Icons.hardware_outlined,
-  EquipmentWorkshop.veilGuild => Icons.visibility_off_outlined,
-  EquipmentWorkshop.arcanist => Icons.auto_fix_high,
-  EquipmentWorkshop.artisan => Icons.handyman_outlined,
 };

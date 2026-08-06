@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
+import 'package:realm_idle_game/core/theme/medieval_assets.dart';
 import 'package:realm_idle_game/features/content/models/active_buffs.dart';
 import 'package:realm_idle_game/features/content/models/alchemy.dart';
 import 'package:realm_idle_game/features/content/models/content_cost.dart';
@@ -200,9 +201,25 @@ void main() {
       find.byKey(const ValueKey<String>('items-workshop-banner')),
       findsOneWidget,
     );
+    expect(
+      find.byWidgetPredicate((widget) {
+        if (widget is! Image) return false;
+        final image = widget.image;
+        final assetImage = image is ResizeImage
+            ? image.imageProvider
+            : image;
+        return assetImage is AssetImage &&
+            assetImage.assetName == MedievalAssets.workshopAsset('blacksmith');
+      }),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(const ValueKey<String>('items-tab-alchemy')));
     await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('items-alchemy-banner')),
+      findsOneWidget,
+    );
     expect(
       find.byKey(const ValueKey<String>('items-active-buffs')),
       findsOneWidget,
@@ -218,6 +235,7 @@ void main() {
       const ValueKey<String>('potion-brew-minor_harvest'),
     );
     await tester.ensureVisible(brew);
+    await tester.pumpAndSettle();
     await tester.tap(brew);
     final usePotion = find.byKey(
       const ValueKey<String>('potion-use-minor_harvest'),
