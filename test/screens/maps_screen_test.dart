@@ -80,4 +80,84 @@ void main() {
     expect(selected, ['crossroads']);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('shows the empty state when there are no regions', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        home: Scaffold(
+          body: MapsScreen(
+            regions: const [],
+            selectedRegionId: null,
+            combatLevel: 1,
+            skillLevels: const {},
+            completedRegionIds: const {},
+            onSelectRegion: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.text('Nenhuma região foi registrada neste mapa.'),
+      findsOneWidget,
+    );
+    expect(find.text('0 de 0 abertas'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'shows the current-destination notice and every workshop chip once unlocked',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const region = WorldRegion(
+        id: 'crossroads',
+        name: 'Encruzilhada Cinzenta',
+        lore: 'Cinzas antigas cobrem a primeira estrada.',
+        sigil: 'Δ',
+        primaryColorValue: 0x5E5145,
+        accentColorValue: 0xC49A52,
+        requirement: RegionRequirement(),
+        enemyIds: ['rat'],
+        workshops: WorkshopType.values,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.theme,
+          home: Scaffold(
+            body: MapsScreen(
+              regions: const [region],
+              selectedRegionId: 'crossroads',
+              combatLevel: 1,
+              skillLevels: const {},
+              completedRegionIds: const {},
+              onSelectRegion: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.textContaining('A região destacada é o destino atual'),
+        findsOneWidget,
+      );
+      expect(find.text('ATUAL'), findsOneWidget);
+      for (final workshop in WorkshopType.values) {
+        expect(find.text(workshop.displayName), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
