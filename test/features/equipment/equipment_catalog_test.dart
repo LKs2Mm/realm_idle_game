@@ -93,6 +93,16 @@ void main() {
       );
     });
 
+    test('assigns every material a distinct, fully-opaque tint color', () {
+      final tints = EquipmentMaterial.values
+          .map((material) => material.tintRgb)
+          .toSet();
+      expect(tints, hasLength(EquipmentMaterial.values.length));
+      for (final tint in tints) {
+        expect(tint, inInclusiveRange(0x000000, 0xFFFFFF));
+      }
+    });
+
     test('routes every class to its own workshop skill', () {
       expect(HeroClass.knight.workshop, EquipmentWorkshop.blacksmith);
       expect(HeroClass.assassin.workshop, EquipmentWorkshop.veilGuild);

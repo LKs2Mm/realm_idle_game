@@ -36,12 +36,20 @@ abstract final class MedievalAssets {
 
   static String workshopAsset(String workshopSaveKey) =>
       'assets/images/medieval/gathering/oficinas/$workshopSaveKey.png';
+
+  /// Uma das 24 ilustrações-base (classe × slot) que cobrem as 2.400
+  /// variações de equipamento; a cor do material é aplicada por cima via
+  /// `MedievalEmblem.tintColor`, não por arte própria. Ver Lote 4 em
+  /// `Realm Idle - Planejamento/11 - Guia de Estilo e Prompts de Arte.md`.
+  static String equipmentAsset(String heroClassSaveKey, String slotSaveKey) =>
+      'assets/images/medieval/gathering/equipamentos/${heroClassSaveKey}_$slotSaveKey.png';
 }
 
 class MedievalEmblem extends StatelessWidget {
   final String assetPath;
   final double size;
   final bool muted;
+  final Color? tintColor;
   final String? semanticLabel;
 
   const MedievalEmblem({
@@ -49,12 +57,13 @@ class MedievalEmblem extends StatelessWidget {
     required this.assetPath,
     required this.size,
     this.muted = false,
+    this.tintColor,
     this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    final image = Image.asset(
+    Widget image = Image.asset(
       assetPath,
       width: size,
       height: size,
@@ -63,6 +72,14 @@ class MedievalEmblem extends StatelessWidget {
       cacheWidth: (size * 3).round(),
       semanticLabel: semanticLabel,
     );
+
+    final tint = tintColor;
+    if (tint != null) {
+      image = ColorFiltered(
+        colorFilter: ColorFilter.mode(tint, BlendMode.modulate),
+        child: image,
+      );
+    }
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(3),

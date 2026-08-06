@@ -154,6 +154,24 @@ extension EquipmentMaterialDetails on EquipmentMaterial {
   };
 
   String get shaftResourceId => '${shaftWoodId}_shaft';
+
+  /// Cor usada para tingir programaticamente as 24 ilustrações-base de
+  /// equipamento (uma por classe × slot, superfície neutra cinza-aço) via
+  /// `BlendMode.modulate`, evitando precisar de arte por material. Ver
+  /// `EquipmentRarityDetails.accentRgb` para o padrão equivalente de
+  /// raridade.
+  int get tintRgb => switch (this) {
+    EquipmentMaterial.copper => 0xC17A4A,
+    EquipmentMaterial.iron => 0x8C96A6,
+    EquipmentMaterial.silver => 0xC9D0D8,
+    EquipmentMaterial.gold => 0xD4AF37,
+    EquipmentMaterial.platinum => 0xE5E4E2,
+    EquipmentMaterial.mithril => 0x6FC3D0,
+    EquipmentMaterial.adamantite => 0x3E4A5C,
+    EquipmentMaterial.runite => 0x2E8B77,
+    EquipmentMaterial.orichalcum => 0xC97A3D,
+    EquipmentMaterial.arcaneCrystal => 0x9B6FD1,
+  };
 }
 
 enum EquipmentRarity {
