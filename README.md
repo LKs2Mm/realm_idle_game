@@ -73,6 +73,10 @@ até as águas abissais e rúnicas:
 
 - O jogador escolhe um inimigo uma vez e a caça se repete automaticamente;
   selecionar outro alvo o coloca na fila para o próximo ciclo.
+- Tocar na classe já ativa (em vez de trocar de classe) abre um painel para
+  equipar arma e cada peça de armadura individualmente, com a aba do
+  Grimório disponível ali mesmo para o Mago vincular magias, sem sair do
+  Combate.
 - O personagem possui vida atual e vida máxima. A vida máxima parte de `100`,
   cresce com a maestria da classe ativa e recebe a Vitalidade dos equipamentos
   vinculados ao conjunto dessa classe.
@@ -329,7 +333,9 @@ compatíveis.
 - Painéis angulares, brilho contido e cores dessaturadas preservam a leitura em
   telas pequenas.
 - Os assets visuais ficam centralizados em `assets/images/medieval/`, incluindo
-  `class-armory.png`, `workshop-hall.png` e `world-map.png`.
+  `class-armory.png`, `workshop-hall.png` e `world-map.png`. Retratos únicos
+  já existem para os 6 inimigos e as 4 classes, em
+  `assets/images/medieval/gathering/criaturas/` e `.../gathering/classes/`.
 
 ## Executar
 
