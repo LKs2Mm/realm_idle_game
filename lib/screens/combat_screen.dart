@@ -1366,28 +1366,17 @@ class _EncounterSigil extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.combatRed.withValues(alpha: muted ? 0.04 : 0.17),
-            AppTheme.voidBlack,
-          ],
-        ),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: (muted ? AppTheme.textSecondary : AppTheme.combatRed)
               .withValues(alpha: 0.48),
         ),
       ),
-      child: Text(
-        encounter.sigil,
-        style: TextStyle(
-          color: muted ? AppTheme.textSecondary : AppTheme.combatRed,
-          fontSize: size * 0.46,
-          fontWeight: FontWeight.w800,
-          height: 1,
-        ),
+      child: MedievalEmblem(
+        assetPath: MedievalAssets.enemyAsset(encounter.id),
+        size: size,
+        muted: muted,
+        semanticLabel: encounter.name,
       ),
     );
   }

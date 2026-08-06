@@ -25,6 +25,9 @@ abstract final class MedievalAssets {
 
   static String toolAsset(String toolId) =>
       'assets/images/medieval/gathering/ferramentas/${toolId.replaceAll(':', '_')}.png';
+
+  static String enemyAsset(String encounterId) =>
+      'assets/images/medieval/gathering/criaturas/$encounterId.png';
 }
 
 class MedievalEmblem extends StatelessWidget {
