@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
+import 'package:realm_idle_game/core/theme/medieval_assets.dart';
 import 'package:realm_idle_game/core/theme/runic_ornaments.dart';
 import 'package:realm_idle_game/features/equipment/models/equipment_models.dart';
 
@@ -294,10 +295,19 @@ class _ClassStatsCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            _IconSeal(
-              icon: _classIcon(stats.heroClass),
-              color: color,
-              size: 42,
+            Container(
+              width: 42,
+              height: 42,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: color.withValues(alpha: 0.5)),
+              ),
+              child: MedievalEmblem(
+                assetPath: MedievalAssets.classAsset(stats.heroClass.saveKey),
+                size: 42,
+                semanticLabel: stats.heroClass.displayName,
+              ),
             ),
             const SizedBox(width: 11),
             Expanded(
@@ -598,13 +608,6 @@ class _EmptyPanel extends StatelessWidget {
     );
   }
 }
-
-IconData _classIcon(HeroClass heroClass) => switch (heroClass) {
-  HeroClass.knight => Icons.shield_outlined,
-  HeroClass.assassin => Icons.visibility_off_outlined,
-  HeroClass.mage => Icons.auto_fix_high,
-  HeroClass.archer => Icons.gps_fixed,
-};
 
 Color _classColor(HeroClass heroClass) => switch (heroClass) {
   HeroClass.knight => AppTheme.combatRed,

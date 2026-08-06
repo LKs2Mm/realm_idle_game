@@ -33,6 +33,7 @@ class ItemsScreen extends StatefulWidget {
   final String? activeSpellId;
   final ProductionSession? activeProductionSession;
   final int initialTabIndex;
+  final HeroClass initialClass;
   final VoidCallback onCancelProduction;
   final ValueChanged<String> onCraftEquipment;
   final ValueChanged<String> onEquipItem;
@@ -60,6 +61,7 @@ class ItemsScreen extends StatefulWidget {
     required this.activeSpellId,
     required this.activeProductionSession,
     this.initialTabIndex = 0,
+    this.initialClass = HeroClass.knight,
     required this.onCancelProduction,
     required this.onCraftEquipment,
     required this.onEquipItem,
@@ -76,10 +78,16 @@ class ItemsScreen extends StatefulWidget {
 }
 
 class _ItemsScreenState extends State<ItemsScreen> {
-  HeroClass _selectedClass = HeroClass.knight;
+  late HeroClass _selectedClass;
   EquipmentSlot _selectedSlot = EquipmentSlot.weapon;
   EquipmentMaterial _selectedMaterial = EquipmentMaterial.copper;
   EquipmentRarity _selectedRarity = EquipmentRarity.common;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedClass = widget.initialClass;
+  }
 
   EquipmentDefinition? get _previewDefinition {
     for (final definition in widget.equipmentDefinitions) {
@@ -505,7 +513,11 @@ class _ClassSelector extends StatelessWidget {
                   key: ValueKey<String>('items-class-${heroClass.saveKey}'),
                   selected: selected == heroClass,
                   onSelected: (_) => onChanged(heroClass),
-                  avatar: Icon(_classIcon(heroClass), size: 16),
+                  avatar: MedievalEmblem(
+                    assetPath: MedievalAssets.classAsset(heroClass.saveKey),
+                    size: 16,
+                    semanticLabel: heroClass.displayName,
+                  ),
                   label: Text(heroClass.displayName),
                 ),
                 if (heroClass != HeroClass.values.last)
@@ -2063,13 +2075,6 @@ IconData _gatheringIcon(GatheringDiscipline discipline) => switch (discipline) {
   GatheringDiscipline.mining => Icons.diamond_outlined,
   GatheringDiscipline.woodcutting => Icons.forest_outlined,
   GatheringDiscipline.fishing => Icons.water_outlined,
-};
-
-IconData _classIcon(HeroClass heroClass) => switch (heroClass) {
-  HeroClass.knight => Icons.shield_outlined,
-  HeroClass.assassin => Icons.visibility_off_outlined,
-  HeroClass.mage => Icons.auto_fix_high,
-  HeroClass.archer => Icons.gps_fixed,
 };
 
 IconData _slotIcon(EquipmentSlot slot) => switch (slot) {

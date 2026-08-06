@@ -16,6 +16,7 @@ class CombatScreen extends StatefulWidget {
   final CombatAdvanceResult? offlineReport;
   final VoidCallback onDismissOfflineReport;
   final VoidCallback onStateChanged;
+  final ValueChanged<HeroClass> onManageEquipment;
 
   const CombatScreen({
     super.key,
@@ -24,6 +25,7 @@ class CombatScreen extends StatefulWidget {
     required this.offlineReport,
     required this.onDismissOfflineReport,
     required this.onStateChanged,
+    required this.onManageEquipment,
   });
 
   @override
@@ -63,6 +65,7 @@ class _CombatScreenState extends State<CombatScreen> {
           _HeroClassSelector(
             gameState: widget.gameState,
             onSelect: _selectHeroClass,
+            onManageEquipment: widget.onManageEquipment,
           ),
           if (widget.offlineReport != null) ...[
             const SizedBox(height: 14),
@@ -167,8 +170,13 @@ class _CombatHeader extends StatelessWidget {
 class _HeroClassSelector extends StatelessWidget {
   final GameState gameState;
   final ValueChanged<HeroClass> onSelect;
+  final ValueChanged<HeroClass> onManageEquipment;
 
-  const _HeroClassSelector({required this.gameState, required this.onSelect});
+  const _HeroClassSelector({
+    required this.gameState,
+    required this.onSelect,
+    required this.onManageEquipment,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -261,7 +269,9 @@ class _HeroClassSelector extends StatelessWidget {
                             equipmentPower: gameState.equipmentPowerFor(
                               heroClass,
                             ),
-                            onTap: () => onSelect(heroClass),
+                            onTap: () => heroClass == activeClass
+                                ? onManageEquipment(heroClass)
+                                : onSelect(heroClass),
                           ),
                         ),
                     ],
@@ -291,7 +301,10 @@ class _HeroClassSelector extends StatelessWidget {
                       child: Text(
                         'Cada vitória automática concede maestria ao caminho '
                         '${activeClass.displayName}. Você pode mudar antes da '
-                        'próxima batalha sem perder progresso.',
+                        'próxima batalha sem perder progresso. Toque na classe '
+                        'ativa para equipar arma, armadura e '
+                        '${activeClass == HeroClass.mage ? 'magias ' : ''}'
+                        'peça por peça.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppTheme.textPrimary,
                           fontSize: 10,
@@ -377,12 +390,13 @@ class _HeroClassTile extends StatelessWidget {
       selected: isActive,
       label:
           '${heroClass.displayName}, maestria nível $masteryLevel, '
-          'poder de equipamento $equipmentPower',
+          'poder de equipamento $equipmentPower'
+          '${isActive ? ', toque para gerenciar equipamento' : ''}',
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           key: ValueKey<String>('combat-class-${heroClass.saveKey}'),
-          onTap: isActive ? null : onTap,
+          onTap: onTap,
           borderRadius: BorderRadius.circular(4),
           child: AnimatedContainer(
             duration: MediaQuery.disableAnimationsOf(context)
@@ -421,13 +435,19 @@ class _HeroClassTile extends StatelessWidget {
                       height: 30,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: isActive ? 0.18 : 0.08),
                         borderRadius: BorderRadius.circular(3),
                         border: Border.all(
                           color: color.withValues(alpha: 0.42),
                         ),
                       ),
-                      child: Icon(heroClass.combatIcon, size: 17, color: color),
+                      child: MedievalEmblem(
+                        assetPath: MedievalAssets.classAsset(
+                          heroClass.saveKey,
+                        ),
+                        size: 30,
+                        muted: !isActive,
+                        semanticLabel: heroClass.displayName,
+                      ),
                     ),
                     const SizedBox(width: 7),
                     Expanded(
@@ -1864,13 +1884,6 @@ class _OfflineVictoryChip extends StatelessWidget {
 }
 
 extension _HeroClassCombatPresentation on HeroClass {
-  IconData get combatIcon => switch (this) {
-    HeroClass.knight => Icons.security_rounded,
-    HeroClass.assassin => Icons.colorize_rounded,
-    HeroClass.mage => Icons.auto_awesome_rounded,
-    HeroClass.archer => Icons.track_changes_rounded,
-  };
-
   Color get combatColor => switch (this) {
     HeroClass.knight => AppTheme.combatBlue,
     HeroClass.assassin => const Color(0xFF9A719F),

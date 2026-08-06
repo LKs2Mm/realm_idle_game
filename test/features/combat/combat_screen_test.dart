@@ -233,6 +233,41 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('tapping the already-active class opens equipment management', (
+    tester,
+  ) async {
+    final state = GameState();
+    final service = CombatService(
+      onUpdate: (_, _) {},
+      now: () => DateTime(2026, 8, 1, 12),
+      enableTimer: false,
+    );
+    service.initialize(state);
+    addTearDown(service.dispose);
+    var stateChanges = 0;
+    final managedClasses = <HeroClass>[];
+
+    await tester.pumpWidget(
+      _combatApp(
+        state: state,
+        service: service,
+        onStateChanged: () => stateChanges++,
+        onManageEquipment: managedClasses.add,
+      ),
+    );
+
+    expect(state.activeHeroClass, HeroClass.knight);
+    final knight = find.byKey(const ValueKey<String>('combat-class-knight'));
+    await tester.ensureVisible(knight);
+    await tester.tap(knight);
+    await tester.pump();
+
+    expect(managedClasses, [HeroClass.knight]);
+    expect(state.activeHeroClass, HeroClass.knight, reason: 'class unchanged');
+    expect(stateChanges, 0, reason: 'no class switch happened');
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('defeat disables encounters and exposes the zero-health state', (
     tester,
   ) async {
@@ -302,6 +337,7 @@ Widget _combatApp({
   CombatAdvanceResult? offlineReport,
   VoidCallback? onDismiss,
   VoidCallback? onStateChanged,
+  ValueChanged<HeroClass>? onManageEquipment,
 }) {
   return MaterialApp(
     theme: AppTheme.theme,
@@ -312,6 +348,7 @@ Widget _combatApp({
         offlineReport: offlineReport,
         onDismissOfflineReport: onDismiss ?? () {},
         onStateChanged: onStateChanged ?? () {},
+        onManageEquipment: onManageEquipment ?? (_) {},
       ),
     ),
   );

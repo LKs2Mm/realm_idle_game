@@ -87,6 +87,39 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'tocar a classe ativa no Combate abre o equipamento por peça sem trocar de tela',
+    (tester) async {
+      tester.view.physicalSize = const Size(430, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      SharedPreferences.setMockInitialValues({});
+      await StorageService.initialize();
+      await tester.pumpWidget(const RealmIdleApp());
+      await tester.pumpAndSettle();
+
+      await _openDestination(tester, 'Combate');
+      final knight = find.byKey(const ValueKey<String>('combat-class-knight'));
+      expect(knight, findsOneWidget);
+      await tester.tap(knight);
+      await tester.pumpAndSettle();
+
+      // Ainda no Combate por baixo do modal, não navegou pra outra aba.
+      expect(find.text('Combate'), findsWidgets);
+      expect(find.text('Equipar Cavaleiro'), findsOneWidget);
+      expect(find.text('Arsenal'), findsOneWidget);
+      expect(find.text('Grimório'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.close_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Equipar Cavaleiro'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 Future<void> _openDestination(WidgetTester tester, String label) async {

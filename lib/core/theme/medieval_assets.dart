@@ -28,6 +28,9 @@ abstract final class MedievalAssets {
 
   static String enemyAsset(String encounterId) =>
       'assets/images/medieval/gathering/criaturas/$encounterId.png';
+
+  static String classAsset(String heroClassSaveKey) =>
+      'assets/images/medieval/gathering/classes/$heroClassSaveKey.png';
 }
 
 class MedievalEmblem extends StatelessWidget {

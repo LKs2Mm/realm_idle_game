@@ -368,6 +368,119 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
     }
   }
 
+  Widget _buildItemsScreen({
+    required int initialTabIndex,
+    HeroClass initialClass = HeroClass.knight,
+    VoidCallback? onAfterAction,
+  }) {
+    void after(void Function() action) {
+      action();
+      onAfterAction?.call();
+    }
+
+    return ItemsScreen(
+      gameState: _gameState,
+      equipment: _gameState.equipment,
+      contentInventory: _gameState.contentInventory,
+      equipmentDefinitions: EquipmentCatalog.all,
+      potions: PotionCatalog.all,
+      spells: SpellCatalog.all,
+      workshopLevels: {
+        for (final workshop in EquipmentWorkshop.values)
+          workshop: _gameState.skills[workshop.skillId]?.level ?? 1,
+      },
+      availableMaterials: _gameState.gatheringInventory.resources,
+      availableGold: _gameState.gold,
+      alchemyLevel: _gameState.skills['alchemy']?.level ?? 1,
+      magicLevel: _gameState.skills['arcanism']?.level ?? 1,
+      activeBuffs: _gameState.activeBuffs,
+      activeSpellId: _gameState.activeSpellId,
+      activeProductionSession: _gameState.activeProductionSession,
+      initialTabIndex: initialTabIndex,
+      initialClass: initialClass,
+      onCancelProduction: () => after(() {
+        _productionService.cancel();
+        _showMessage('Encomenda cancelada; os materiais foram devolvidos.');
+      }),
+      onCraftEquipment: (id) => after(() => _craftEquipment(id)),
+      onEquipItem: (id) => after(() => _equipItem(id)),
+      onBrewPotion: (id) => after(() => _brewPotion(id)),
+      onUsePotion: (id) => after(() => _usePotion(id)),
+      onCraftSpell: (id) => after(() => _craftSpell(id)),
+      onUseSpell: (id) => after(() => _useSpell(id)),
+      onStartProcessing: (id, quantity) =>
+          after(() => _startProcessing(id, quantity)),
+      onEatFood: (id) => after(() => _eatCookedFish(id)),
+    );
+  }
+
+  void _openClassEquipmentSheet(HeroClass heroClass) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return FractionallySizedBox(
+              heightFactor: 0.94,
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: AppTheme.darkBackground,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(14),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppTheme.darkCardBorder,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 8, 0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Equipar ${heroClass.displayName}',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded),
+                            color: AppTheme.textSecondary,
+                            onPressed: () => Navigator.of(sheetContext).pop(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildItemsScreen(
+                        initialTabIndex: 1,
+                        initialClass: heroClass,
+                        onAfterAction: () => setModalState(() {}),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildScreen() {
     switch (_selectedIndex) {
       case 0:
@@ -394,40 +507,10 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
             setState(() {});
             _saveState();
           },
+          onManageEquipment: _openClassEquipmentSheet,
         );
       case 3:
-        return ItemsScreen(
-          gameState: _gameState,
-          equipment: _gameState.equipment,
-          contentInventory: _gameState.contentInventory,
-          equipmentDefinitions: EquipmentCatalog.all,
-          potions: PotionCatalog.all,
-          spells: SpellCatalog.all,
-          workshopLevels: {
-            for (final workshop in EquipmentWorkshop.values)
-              workshop: _gameState.skills[workshop.skillId]?.level ?? 1,
-          },
-          availableMaterials: _gameState.gatheringInventory.resources,
-          availableGold: _gameState.gold,
-          alchemyLevel: _gameState.skills['alchemy']?.level ?? 1,
-          magicLevel: _gameState.skills['arcanism']?.level ?? 1,
-          activeBuffs: _gameState.activeBuffs,
-          activeSpellId: _gameState.activeSpellId,
-          activeProductionSession: _gameState.activeProductionSession,
-          initialTabIndex: _selectedItemsTabIndex,
-          onCancelProduction: () {
-            _productionService.cancel();
-            _showMessage('Encomenda cancelada; os materiais foram devolvidos.');
-          },
-          onCraftEquipment: _craftEquipment,
-          onEquipItem: _equipItem,
-          onBrewPotion: _brewPotion,
-          onUsePotion: _usePotion,
-          onCraftSpell: _craftSpell,
-          onUseSpell: _useSpell,
-          onStartProcessing: _startProcessing,
-          onEatFood: _eatCookedFish,
-        );
+        return _buildItemsScreen(initialTabIndex: _selectedItemsTabIndex);
       case 4:
         return MapsScreen(
           regions: WorldRegionCatalog.all,
