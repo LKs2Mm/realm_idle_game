@@ -600,7 +600,20 @@ class _EquippedSlotCard extends StatelessWidget {
         padding: const EdgeInsets.all(11),
         child: Row(
           children: [
-            _ItemSeal(icon: _slotIcon(slot), color: color, size: 40),
+            _ItemSeal(
+              icon: _slotIcon(slot),
+              color: color,
+              size: 40,
+              imageAsset: item == null
+                  ? null
+                  : MedievalAssets.equipmentAsset(
+                      item.heroClass.saveKey,
+                      slot.saveKey,
+                    ),
+              imageTint: item == null
+                  ? null
+                  : Color(0xFF000000 | item.material.tintRgb),
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -871,6 +884,11 @@ class _EquipmentPreviewCard extends StatelessWidget {
                     icon: _slotIcon(definition.slot),
                     color: color,
                     size: 48,
+                    imageAsset: MedievalAssets.equipmentAsset(
+                      definition.heroClass.saveKey,
+                      definition.slot.saveKey,
+                    ),
+                    imageTint: Color(0xFF000000 | definition.material.tintRgb),
                   ),
                   const SizedBox(width: 11),
                   Expanded(
@@ -1970,11 +1988,15 @@ class _ItemSeal extends StatelessWidget {
   final IconData icon;
   final Color color;
   final double size;
+  final String? imageAsset;
+  final Color? imageTint;
 
   const _ItemSeal({
     required this.icon,
     required this.color,
     required this.size,
+    this.imageAsset,
+    this.imageTint,
   });
 
   @override
@@ -1988,7 +2010,25 @@ class _ItemSeal extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: color.withValues(alpha: 0.45)),
       ),
-      child: Icon(icon, color: color, size: size * 0.5),
+      child: imageAsset == null
+          ? Icon(icon, color: color, size: size * 0.5)
+          : ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: Image.asset(
+                imageAsset!,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.none,
+                color: imageTint,
+                colorBlendMode: imageTint == null ? null : BlendMode.modulate,
+                // Cobre classes cuja arte-base ainda não foi gerada (ex.:
+                // knight em `gathering/equipamentos/`) — volta pro ícone
+                // genérico em vez de estourar erro de asset ausente.
+                errorBuilder: (context, error, stackTrace) =>
+                    Icon(icon, color: color, size: size * 0.5),
+              ),
+            ),
     );
   }
 }

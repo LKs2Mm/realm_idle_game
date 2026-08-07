@@ -333,9 +333,11 @@ compatíveis.
 - Painéis angulares, brilho contido e cores dessaturadas preservam a leitura em
   telas pequenas.
 - Os assets visuais ficam centralizados em `assets/images/medieval/`, incluindo
-  `class-armory.png`, `workshop-hall.png` e `world-map.png`. Retratos únicos
-  já existem para os 6 inimigos e as 4 classes, em
-  `assets/images/medieval/gathering/criaturas/` e `.../gathering/classes/`.
+  `class-armory.png`, `workshop-hall.png` e `world-map.png`. Retratos únicos já
+  existem para os 6 inimigos (`.../gathering/criaturas/`), as 4 classes
+  (`.../gathering/classes/`) e as 5 oficinas (`.../gathering/oficinas/`). As
+  24 bases de equipamento (4 classes × 6 slots, `.../gathering/equipamentos/`)
+  estão completas e tingidas por material via `ColorFilter`.
 
 ## Executar
 

@@ -330,4 +330,98 @@ void main() {
     ]);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'equipped and previewed items render the tinted equipment art when it exists',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final dagger = EquipmentCatalog.definition(
+        heroClass: HeroClass.assassin,
+        slot: EquipmentSlot.weapon,
+        material: EquipmentMaterial.copper,
+        rarity: EquipmentRarity.common,
+      );
+      final equipment = EquipmentState(
+        inventory: EquipmentInventory(items: {dagger.id: 1}),
+        loadouts: EquipmentLoadouts(
+          equipped: {
+            HeroClass.assassin: {EquipmentSlot.weapon: dagger.id},
+          },
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.theme,
+          home: Scaffold(
+            body: ItemsScreen(
+              gameState: GameState(),
+              equipment: equipment,
+              contentInventory: ContentInventory(),
+              equipmentDefinitions: [dagger],
+              potions: const [],
+              spells: const [],
+              initialClass: HeroClass.assassin,
+              workshopLevels: const {
+                EquipmentWorkshop.blacksmith: 1,
+                EquipmentWorkshop.veilGuild: 1,
+                EquipmentWorkshop.arcanist: 1,
+                EquipmentWorkshop.artisan: 1,
+              },
+              availableMaterials: const {},
+              availableGold: 0,
+              alchemyLevel: 1,
+              magicLevel: 1,
+              activeBuffs: ActiveBuffs(),
+              activeSpellId: null,
+              activeProductionSession: null,
+              onCancelProduction: () {},
+              onCraftEquipment: (_) {},
+              onEquipItem: (_) {},
+              onBrewPotion: (_) {},
+              onUsePotion: (_) {},
+              onCraftSpell: (_) {},
+              onUseSpell: (_) {},
+              onStartProcessing: (_, _) {},
+              onEatFood: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      bool matchesDaggerArt(Widget widget) {
+        if (widget is! Image) return false;
+        final image = widget.image;
+        if (image is! AssetImage) return false;
+        return image.assetName ==
+                MedievalAssets.equipmentAsset('assassin', 'weapon') &&
+            widget.colorBlendMode == BlendMode.modulate;
+      }
+
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey<String>('equipped-slot-weapon')),
+          matching: find.byWidgetPredicate(matchesDaggerArt),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('items-tab-arsenal')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byKey(ValueKey<String>('equipment-preview-${dagger.id}')),
+          matching: find.byWidgetPredicate(matchesDaggerArt),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
