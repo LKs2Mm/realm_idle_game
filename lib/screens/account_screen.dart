@@ -620,6 +620,7 @@ class _VolumeSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final percent = (value.clamp(0.0, 1.0) * 100).round();
     return Row(
       children: [
         Icon(icon, size: 18, color: AppTheme.textSecondary),
@@ -629,16 +630,20 @@ class _VolumeSlider extends StatelessWidget {
           child: Text(label, style: Theme.of(context).textTheme.bodySmall),
         ),
         Expanded(
-          child: Slider(
-            key: sliderKey,
-            value: value.clamp(0.0, 1.0),
-            onChanged: enabled ? onChanged : null,
+          child: Semantics(
+            label: label,
+            value: '$percent%',
+            child: Slider(
+              key: sliderKey,
+              value: value.clamp(0.0, 1.0),
+              onChanged: enabled ? onChanged : null,
+            ),
           ),
         ),
         SizedBox(
           width: 32,
           child: Text(
-            '${(value.clamp(0.0, 1.0) * 100).round()}%',
+            '$percent%',
             textAlign: TextAlign.end,
             style: Theme.of(context).textTheme.bodySmall,
           ),

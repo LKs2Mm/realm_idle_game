@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
 import 'package:realm_idle_game/features/content/models/world_region.dart';
@@ -78,6 +79,25 @@ void main() {
     await tester.ensureVisible(lockedRegion);
     await tester.tap(lockedRegion);
     expect(selected, ['crossroads']);
+
+    final unlockedSemantics = tester.getSemantics(
+      find.bySemanticsLabel('Encruzilhada Cinzenta'),
+    );
+    expect(unlockedSemantics.hasFlag(SemanticsFlag.isButton), isTrue);
+    expect(unlockedSemantics.hasFlag(SemanticsFlag.isEnabled), isTrue);
+
+    final lockedSemantics = tester.getSemantics(
+      find.bySemanticsLabel('Bastião Obsidiano'),
+    );
+    expect(lockedSemantics.hasFlag(SemanticsFlag.isEnabled), isFalse);
+    expect(lockedSemantics.value, contains('bloqueada'));
+    expect(lockedSemantics.value, contains('Combate 20'));
+
+    final combatMetric = tester.getSemantics(
+      find.bySemanticsLabel('Nível de combate'),
+    );
+    expect(combatMetric.value, '1');
+
     expect(tester.takeException(), isNull);
   });
 

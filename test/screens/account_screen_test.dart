@@ -317,6 +317,13 @@ void main() {
     expect(tester.widget<Slider>(musicSlider).value, closeTo(0.6, 0.001));
     expect(tester.widget<Slider>(sfxSlider).value, closeTo(0.8, 0.001));
 
+    final musicSemantics = tester.getSemantics(musicSlider);
+    expect(musicSemantics.label, 'Música');
+    expect(musicSemantics.value, '60%');
+    final sfxSemantics = tester.getSemantics(sfxSlider);
+    expect(sfxSemantics.label, 'Efeitos');
+    expect(sfxSemantics.value, '80%');
+
     await tester.drag(musicSlider, const Offset(-80, 0));
     expect(musicVolumeRequest, isNotNull);
 

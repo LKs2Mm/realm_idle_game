@@ -260,43 +260,49 @@ class _HeaderMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 55),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppTheme.voidBlack.withValues(alpha: 0.68),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 19, color: color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(fontSize: 9),
+    return Semantics(
+      label: label,
+      value: value,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 55),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppTheme.voidBlack.withValues(alpha: 0.68),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: ExcludeSemantics(
+          child: Row(
+            children: [
+              Icon(icon, size: 19, color: color),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(fontSize: 9),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      value,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -395,95 +401,109 @@ class _RegionCard extends StatelessWidget {
     final primary = _regionColor(region.primaryColorValue);
     final accent = _regionColor(region.accentColorValue);
 
-    return Card(
-      key: ValueKey<String>('region-${region.id}'),
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      shape: BeveledRectangleBorder(
-        borderRadius: AppTheme.panelRadius,
-        side: BorderSide(
-          color: isSelected
-              ? accent
-              : (isUnlocked ? primary : AppTheme.darkCardBorder),
-          width: isSelected ? 1.6 : 1,
-        ),
-      ),
-      child: InkWell(
-        onTap: isUnlocked ? () => onSelect(region.id) : null,
-        child: RunicFrame(
-          color: isUnlocked ? accent : AppTheme.textSecondary,
-          opacity: isSelected ? 0.72 : 0.36,
-          child: Container(
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  primary.withValues(alpha: isUnlocked ? 0.13 : 0.04),
-                  AppTheme.darkCard,
-                  AppTheme.voidBlack.withValues(alpha: 0.75),
-                ],
-              ),
+    return Semantics(
+      key: ValueKey<String>('region-semantics-${region.id}'),
+      button: isUnlocked,
+      selected: isSelected,
+      enabled: isUnlocked,
+      label: region.name,
+      value: isSelected
+          ? 'Destino atual'
+          : isUnlocked
+          ? 'Região desbloqueada. ${region.lore}'
+          : 'Região bloqueada. ${_requirementSummary(region, regions)}',
+      child: ExcludeSemantics(
+        child: Card(
+          key: ValueKey<String>('region-${region.id}'),
+          margin: EdgeInsets.zero,
+          clipBehavior: Clip.antiAlias,
+          shape: BeveledRectangleBorder(
+            borderRadius: AppTheme.panelRadius,
+            side: BorderSide(
+              color: isSelected
+                  ? accent
+                  : (isUnlocked ? primary : AppTheme.darkCardBorder),
+              width: isSelected ? 1.6 : 1,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _RegionSigil(
-                      sigil: region.sigil,
-                      color: isUnlocked ? accent : AppTheme.textSecondary,
-                    ),
-                    const SizedBox(width: 11),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            region.name,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: isUnlocked
-                                      ? AppTheme.textPrimary
-                                      : AppTheme.textSecondary,
-                                ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            region.lore,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: _RegionStatus(
-                    isSelected: isSelected,
-                    isUnlocked: isUnlocked,
-                    color: accent,
-                  ),
-                ),
-                const SizedBox(height: 11),
-                if (!isUnlocked)
-                  _RequirementPanel(region: region, regions: regions)
-                else if (region.workshops.isNotEmpty)
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      for (final workshop in region.workshops)
-                        _WorkshopChip(workshop: workshop, color: accent),
+          ),
+          child: InkWell(
+            onTap: isUnlocked ? () => onSelect(region.id) : null,
+            child: RunicFrame(
+              color: isUnlocked ? accent : AppTheme.textSecondary,
+              opacity: isSelected ? 0.72 : 0.36,
+              child: Container(
+                padding: const EdgeInsets.all(13),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      primary.withValues(alpha: isUnlocked ? 0.13 : 0.04),
+                      AppTheme.darkCard,
+                      AppTheme.voidBlack.withValues(alpha: 0.75),
                     ],
                   ),
-              ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _RegionSigil(
+                          sigil: region.sigil,
+                          color: isUnlocked ? accent : AppTheme.textSecondary,
+                        ),
+                        const SizedBox(width: 11),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                region.name,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: isUnlocked
+                                          ? AppTheme.textPrimary
+                                          : AppTheme.textSecondary,
+                                    ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                region.lore,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: _RegionStatus(
+                        isSelected: isSelected,
+                        isUnlocked: isUnlocked,
+                        color: accent,
+                      ),
+                    ),
+                    const SizedBox(height: 11),
+                    if (!isUnlocked)
+                      _RequirementPanel(region: region, regions: regions)
+                    else if (region.workshops.isNotEmpty)
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final workshop in region.workshops)
+                            _WorkshopChip(workshop: workshop, color: accent),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -574,15 +594,7 @@ class _RequirementPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final requirement = region.requirement;
-    final labels = <String>[
-      if (requirement.requiredCombatLevel > 1)
-        'Combate ${requirement.requiredCombatLevel}',
-      for (final entry in requirement.requiredSkillLevels.entries)
-        '${_skillName(entry.key)} ${entry.value}',
-      if (requirement.prerequisiteRegionId != null)
-        'Concluir ${_regionName(requirement.prerequisiteRegionId!, regions)}',
-    ];
+    final labels = _requirementLabels(region, regions);
 
     return Container(
       padding: const EdgeInsets.all(9),
@@ -686,6 +698,23 @@ class _EmptyRegions extends StatelessWidget {
 Color _regionColor(int value) {
   final argb = value <= 0xFFFFFF ? 0xFF000000 | value : value;
   return Color(argb);
+}
+
+List<String> _requirementLabels(WorldRegion region, List<WorldRegion> regions) {
+  final requirement = region.requirement;
+  return [
+    if (requirement.requiredCombatLevel > 1)
+      'Combate ${requirement.requiredCombatLevel}',
+    for (final entry in requirement.requiredSkillLevels.entries)
+      '${_skillName(entry.key)} ${entry.value}',
+    if (requirement.prerequisiteRegionId != null)
+      'Concluir ${_regionName(requirement.prerequisiteRegionId!, regions)}',
+  ];
+}
+
+String _requirementSummary(WorldRegion region, List<WorldRegion> regions) {
+  final labels = _requirementLabels(region, regions);
+  return labels.isEmpty ? 'Requisito oculto' : labels.join(', ');
 }
 
 String _regionName(String id, List<WorldRegion> regions) {
