@@ -670,12 +670,16 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: AppTheme.accentYellow),
         const SizedBox(width: 7),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppTheme.accentYellow,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.8,
+        Flexible(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppTheme.accentYellow,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+            ),
           ),
         ),
         const SizedBox(width: 8),

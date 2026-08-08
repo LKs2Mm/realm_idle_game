@@ -365,4 +365,63 @@ void main() {
     expect(sfxVolumeRequest, isNull);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('renders without overflow at a large accessibility text scale', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(1.6)),
+          child: child!,
+        ),
+        home: Scaffold(
+          body: AccountScreen(
+            characterName: 'Aldren, o Longo Nome de Teste',
+            characterTitle: 'Guardião das Cinzas Eternas',
+            saveId: 'realm-7F2A',
+            createdAtLabel: '01/08/2026',
+            lastSavedAtLabel: 'agora',
+            classStats: HeroClass.values
+                .map(
+                  (heroClass) => AccountClassStats(
+                    heroClass: heroClass,
+                    level: heroClass.index + 1,
+                    victories: heroClass.index * 3,
+                    power: 10 + heroClass.index,
+                  ),
+                )
+                .toList(),
+            chronicle: const [
+              AccountChronicleEntry(
+                id: 'awakening',
+                title: 'O Despertar',
+                description: 'A primeira runa respondeu ao chamado.',
+                dateLabel: 'Hoje',
+              ),
+            ],
+            musicVolume: 0.6,
+            sfxVolume: 0.8,
+            audioMuted: false,
+            onProfileChanged: (_, _) {},
+            onSaveRequested: () {},
+            onIdentityRequested: () {},
+            onMusicVolumeChanged: (_) {},
+            onSfxVolumeChanged: (_) {},
+            onAudioMutedChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+  });
 }

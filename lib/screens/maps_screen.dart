@@ -358,12 +358,16 @@ class _SectionTitle extends StatelessWidget {
       children: [
         const Icon(Icons.public, size: 16, color: AppTheme.miningGreenLight),
         const SizedBox(width: 7),
-        Text(
-          'REGIÕES',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppTheme.miningGreenLight,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1,
+        Flexible(
+          child: Text(
+            'REGIÕES',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppTheme.miningGreenLight,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -654,12 +658,16 @@ class _WorkshopChip extends StatelessWidget {
               semanticLabel: workshop.displayName,
             ),
             const SizedBox(width: 4),
-            Text(
-              workshop.displayName,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: color,
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
+            Flexible(
+              child: Text(
+                workshop.displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: color,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],

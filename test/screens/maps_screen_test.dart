@@ -180,4 +180,64 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('renders without overflow at a large accessibility text scale', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const region = WorldRegion(
+      id: 'crossroads',
+      name: 'Encruzilhada Cinzenta',
+      lore: 'Cinzas antigas cobrem a primeira estrada e guardam segredos.',
+      sigil: 'Δ',
+      primaryColorValue: 0x5E5145,
+      accentColorValue: 0xC49A52,
+      requirement: RegionRequirement(),
+      enemyIds: ['rat'],
+      workshops: WorkshopType.values,
+    );
+    const locked = WorldRegion(
+      id: 'bastion',
+      name: 'Bastião Obsidiano',
+      lore: 'Uma fortaleza que ainda vigia o abismo.',
+      sigil: 'Ω',
+      primaryColorValue: 0x392D43,
+      accentColorValue: 0xA779B4,
+      requirement: RegionRequirement(
+        requiredCombatLevel: 20,
+        requiredSkillLevels: {'mining': 10},
+        prerequisiteRegionId: 'crossroads',
+      ),
+      enemyIds: ['sentinel'],
+      workshops: [],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(1.6)),
+          child: child!,
+        ),
+        home: Scaffold(
+          body: MapsScreen(
+            regions: const [region, locked],
+            selectedRegionId: 'crossroads',
+            combatLevel: 1,
+            skillLevels: const {},
+            completedRegionIds: const {},
+            onSelectRegion: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+  });
 }
