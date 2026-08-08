@@ -58,6 +58,7 @@ class GameState {
   late ActiveBuffs activeBuffs;
   late PlayerProfile profile;
   AudioSettings audioSettings = AudioSettings();
+  bool hasSeenOnboarding = false;
   HeroClass activeHeroClass = HeroClass.knight;
   String? activeSpellId;
   final Map<HeroClass, int> classVictories = {
@@ -918,6 +919,10 @@ class GameState {
     audioSettings.muted = muted;
   }
 
+  void completeOnboarding() {
+    hasSeenOnboarding = true;
+  }
+
   String get saveIdentity {
     final fragment = profile.createdAt.toRadixString(16).toUpperCase();
     return 'realm-${fragment.length <= 8 ? fragment : fragment.substring(fragment.length - 8)}';
@@ -952,6 +957,7 @@ class GameState {
     'visitedRegionIds': visitedRegionIds.toList(growable: false),
     'combatDropRemainders': combatDropRemainders,
     'audioSettings': audioSettings.toJson(),
+    'hasSeenOnboarding': hasSeenOnboarding,
   };
 
   factory GameState.fromJson(Map<String, dynamic> json) {
@@ -1024,6 +1030,11 @@ class GameState {
     state.activeBuffs.pruneExpired(DateTime.now());
     state.profile = PlayerProfile.fromJson(json['profile']);
     state.audioSettings = AudioSettings.fromJson(json['audioSettings']);
+    // Saves gravados antes do onboarding existir não têm essa chave — trata
+    // como "já viu" pra não reexibir o tutorial pra quem já está em progresso.
+    state.hasSeenOnboarding = json.containsKey('hasSeenOnboarding')
+        ? json['hasSeenOnboarding'] == true
+        : true;
 
     final savedHeroClass = _heroClassFromKey(json['activeHeroClass']);
     state.activeHeroClass = savedHeroClass ?? HeroClass.knight;

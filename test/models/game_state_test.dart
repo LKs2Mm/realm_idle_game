@@ -398,6 +398,37 @@ void main() {
       expect(state.audioSettings.musicVolume, 0.0);
       expect(state.audioSettings.sfxVolume, 1.0);
     });
+
+    test('a brand new game has not seen onboarding yet', () {
+      expect(GameState().hasSeenOnboarding, isFalse);
+    });
+
+    test('treats saves predating onboarding as already onboarded', () {
+      final state = GameState.fromJson({'gold': 10});
+
+      expect(state.hasSeenOnboarding, isTrue);
+    });
+
+    test('round-trips the onboarding flag once explicitly set', () {
+      final state = GameState()..completeOnboarding();
+
+      final restored = GameState.fromJson(
+        Map<String, dynamic>.from(
+          jsonDecode(jsonEncode(state.toJson())) as Map,
+        ),
+      );
+
+      expect(restored.hasSeenOnboarding, isTrue);
+    });
+
+    test('honors an explicit false onboarding flag from a real save', () {
+      final state = GameState.fromJson({
+        'gold': 10,
+        'hasSeenOnboarding': false,
+      });
+
+      expect(state.hasSeenOnboarding, isFalse);
+    });
   });
 
   group('Gathering tools', () {

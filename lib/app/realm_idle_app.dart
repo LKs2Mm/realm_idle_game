@@ -27,6 +27,7 @@ import 'package:realm_idle_game/screens/skills_screen.dart';
 import 'package:realm_idle_game/services/audio_service.dart';
 import 'package:realm_idle_game/services/storage_service.dart';
 import 'package:realm_idle_game/widgets/header_widget.dart';
+import 'package:realm_idle_game/widgets/onboarding_overlay.dart';
 
 class RealmIdleApp extends StatelessWidget {
   const RealmIdleApp({super.key});
@@ -62,6 +63,7 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
   int _selectedItemsTabIndex = 0;
   DateTime _lastSavedAt = DateTime.now();
   bool _isLoading = true;
+  bool _showOnboarding = false;
 
   @override
   void initState() {
@@ -90,6 +92,7 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
       _offlineCombatReport = combatReport.hasRewards ? combatReport : null;
       _lastSavedAt = DateTime.now();
       _isLoading = false;
+      _showOnboarding = !gameState.hasSeenOnboarding;
     });
     unawaited(AudioService.initialize(gameState.audioSettings));
     _updateMusicForScreen();
@@ -159,6 +162,12 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
     _gameState.setAudioMuted(muted);
     unawaited(AudioService.applySettings(_gameState.audioSettings));
     setState(() {});
+    _saveState();
+  }
+
+  void _completeOnboarding() {
+    _gameState.completeOnboarding();
+    setState(() => _showOnboarding = false);
     _saveState();
   }
 
@@ -464,9 +473,7 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
               child: DecoratedBox(
                 decoration: const BoxDecoration(
                   color: AppTheme.darkBackground,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(14),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
                 ),
                 child: Column(
                   children: [
@@ -685,81 +692,89 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
     final showAllNavigationLabels =
         mediaQuery.size.width >= 390 && mediaQuery.textScaler.scale(1) <= 1.15;
 
-    return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
-      body: MedievalBackground(
-        child: Column(
-          children: [
-            HeaderWidget(gameState: _gameState),
-            Expanded(child: _buildScreen()),
-          ],
-        ),
-      ),
-      bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppTheme.darkCardRaised, AppTheme.voidBlack],
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppTheme.darkBackground,
+          body: MedievalBackground(
+            child: Column(
+              children: [
+                HeaderWidget(gameState: _gameState),
+                Expanded(child: _buildScreen()),
+              ],
+            ),
           ),
-          border: Border(top: BorderSide(color: AppTheme.darkCardBorder)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black,
-              blurRadius: 12,
-              offset: Offset(0, -4),
+          bottomNavigationBar: DecoratedBox(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppTheme.darkCardRaised, AppTheme.voidBlack],
+              ),
+              border: Border(top: BorderSide(color: AppTheme.darkCardBorder)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black,
+                  blurRadius: 12,
+                  offset: Offset(0, -4),
+                ),
+              ],
             ),
-          ],
+            child: BottomNavigationBar(
+              currentIndex: _bottomNavScreenIndices
+                  .indexOf(_selectedIndex)
+                  .clamp(0, _bottomNavScreenIndices.length - 1),
+              onTap: (visibleIndex) {
+                setState(
+                  () => _selectedIndex = _bottomNavScreenIndices[visibleIndex],
+                );
+                _updateMusicForScreen();
+              },
+              selectedFontSize: 9,
+              unselectedFontSize: 8,
+              showSelectedLabels: true,
+              showUnselectedLabels: showAllNavigationLabels,
+              iconSize: 22,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.psychology),
+                  activeIcon: RunicNavIcon(icon: Icons.psychology),
+                  label: 'Habilidades',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.sports_mma),
+                  activeIcon: RunicNavIcon(icon: Icons.sports_mma),
+                  label: 'Combate',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.backpack),
+                  activeIcon: RunicNavIcon(icon: Icons.backpack),
+                  label: 'Itens',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.map),
+                  activeIcon: RunicNavIcon(icon: Icons.map),
+                  label: 'Mapas',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.build),
+                  activeIcon: RunicNavIcon(icon: Icons.build),
+                  label: 'Ferramentas',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  activeIcon: RunicNavIcon(icon: Icons.person),
+                  label: 'Conta',
+                ),
+              ],
+            ),
+          ),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _bottomNavScreenIndices
-              .indexOf(_selectedIndex)
-              .clamp(0, _bottomNavScreenIndices.length - 1),
-          onTap: (visibleIndex) {
-            setState(
-              () => _selectedIndex = _bottomNavScreenIndices[visibleIndex],
-            );
-            _updateMusicForScreen();
-          },
-          selectedFontSize: 9,
-          unselectedFontSize: 8,
-          showSelectedLabels: true,
-          showUnselectedLabels: showAllNavigationLabels,
-          iconSize: 22,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.psychology),
-              activeIcon: RunicNavIcon(icon: Icons.psychology),
-              label: 'Habilidades',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.sports_mma),
-              activeIcon: RunicNavIcon(icon: Icons.sports_mma),
-              label: 'Combate',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.backpack),
-              activeIcon: RunicNavIcon(icon: Icons.backpack),
-              label: 'Itens',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              activeIcon: RunicNavIcon(icon: Icons.map),
-              label: 'Mapas',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.build),
-              activeIcon: RunicNavIcon(icon: Icons.build),
-              label: 'Ferramentas',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              activeIcon: RunicNavIcon(icon: Icons.person),
-              label: 'Conta',
-            ),
-          ],
-        ),
-      ),
+        if (_showOnboarding)
+          Positioned.fill(
+            child: OnboardingOverlay(onFinished: _completeOnboarding),
+          ),
+      ],
     );
   }
 }

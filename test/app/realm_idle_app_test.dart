@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/app/realm_idle_app.dart';
+import 'package:realm_idle_game/models/game_state.dart';
 import 'package:realm_idle_game/services/storage_service.dart';
 import 'package:realm_idle_game/widgets/skill_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +21,7 @@ void main() {
       await StorageService.initialize();
       await tester.pumpWidget(const RealmIdleApp());
       await tester.pumpAndSettle();
+      await _skipOnboarding(tester);
 
       expect(find.text('HABILIDADES'), findsOneWidget);
       // Colheita não tem mais aba fixa: é alcançada pelos cards de
@@ -60,6 +64,7 @@ void main() {
     await StorageService.initialize();
     await tester.pumpWidget(const RealmIdleApp());
     await tester.pumpAndSettle();
+    await _skipOnboarding(tester);
 
     final cookingCard = find.ancestor(
       of: find.text('Culinária'),
@@ -100,6 +105,7 @@ void main() {
       await StorageService.initialize();
       await tester.pumpWidget(const RealmIdleApp());
       await tester.pumpAndSettle();
+      await _skipOnboarding(tester);
 
       await _openDestination(tester, 'Combate');
       final knight = find.byKey(const ValueKey<String>('combat-class-knight'));
@@ -120,11 +126,105 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'mostra o onboarding numa partida nova e libera o app ao concluir',
+    (tester) async {
+      tester.view.physicalSize = const Size(430, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      SharedPreferences.setMockInitialValues({});
+      await StorageService.initialize();
+      await tester.pumpWidget(const RealmIdleApp());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bem-vindo(a) a Realm Idle'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('onboarding-overlay')),
+        findsOneWidget,
+      );
+
+      final next = find.byKey(const ValueKey<String>('onboarding-next'));
+      final title = find.byKey(const ValueKey<String>('onboarding-title'));
+      for (final expectedTitle in ['Colheita', 'Combate', 'Itens']) {
+        await tester.tap(next);
+        await tester.pumpAndSettle();
+        expect(tester.widget<Text>(title).data, expectedTitle);
+      }
+
+      expect(tester.widget<ElevatedButton>(next).enabled, isTrue);
+      await tester.tap(next);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('onboarding-overlay')),
+        findsNothing,
+      );
+      expect(find.text('HABILIDADES'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'não mostra o onboarding pra um save que já completou o tutorial',
+    (tester) async {
+      tester.view.physicalSize = const Size(430, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final onboardedSave = GameState()..completeOnboarding();
+      SharedPreferences.setMockInitialValues({
+        'game_state': jsonEncode(onboardedSave.toJson()),
+      });
+      await StorageService.initialize();
+      await tester.pumpWidget(const RealmIdleApp());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bem-vindo(a) a Realm Idle'), findsNothing);
+      expect(
+        find.byKey(const ValueKey<String>('onboarding-overlay')),
+        findsNothing,
+      );
+      expect(find.text('HABILIDADES'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('pular o onboarding libera o app imediatamente', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    SharedPreferences.setMockInitialValues({});
+    await StorageService.initialize();
+    await tester.pumpWidget(const RealmIdleApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey<String>('onboarding-skip')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey<String>('onboarding-overlay')), findsNothing);
+    expect(find.text('HABILIDADES'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _openDestination(WidgetTester tester, String label) async {
   final destination = find.text(label).last;
   expect(destination, findsOneWidget);
   await tester.tap(destination);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _skipOnboarding(WidgetTester tester) async {
+  final skip = find.byKey(const ValueKey<String>('onboarding-skip'));
+  if (skip.evaluate().isEmpty) return;
+  await tester.tap(skip);
   await tester.pumpAndSettle();
 }
