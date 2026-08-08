@@ -1623,6 +1623,7 @@ class _OwnedMaterial {
   final IconData? icon;
   final String? sigil;
   final Color color;
+  final String? imageAsset;
 
   const _OwnedMaterial({
     required this.id,
@@ -1634,6 +1635,7 @@ class _OwnedMaterial {
     required this.icon,
     required this.sigil,
     required this.color,
+    this.imageAsset,
   });
 
   factory _OwnedMaterial.fromGathering(
@@ -1698,6 +1700,9 @@ class _OwnedMaterial {
       icon: icon,
       sigil: null,
       color: color,
+      imageAsset: recipe.kind == ProcessingKind.cooking
+          ? MedievalAssets.gatheringItemAsset('comidas', recipe.output.resourceId)
+          : null,
     );
   }
 }
@@ -1728,6 +1733,7 @@ class _MaterialCard extends StatelessWidget {
                 icon: material.icon ?? Icons.category_outlined,
                 color: material.color,
                 size: 42,
+                imageAsset: material.imageAsset,
               ),
             const SizedBox(width: 10),
             Expanded(

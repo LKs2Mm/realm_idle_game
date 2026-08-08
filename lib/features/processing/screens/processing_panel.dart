@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
+import 'package:realm_idle_game/core/theme/medieval_assets.dart';
 import 'package:realm_idle_game/core/theme/runic_ornaments.dart';
 import 'package:realm_idle_game/features/gathering/models/gathering_resource.dart';
 import 'package:realm_idle_game/features/processing/data/processing_recipe_catalog.dart';
@@ -398,7 +399,16 @@ class _ProcessingRecipeCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _ProcessingSeal(icon: _kindIcon(recipe.kind), color: color),
+                  _ProcessingSeal(
+                    icon: _kindIcon(recipe.kind),
+                    color: color,
+                    imageAsset: cookingRecipe == null
+                        ? null
+                        : MedievalAssets.gatheringItemAsset(
+                            'comidas',
+                            cookingRecipe.foodId,
+                          ),
+                  ),
                   const SizedBox(width: 9),
                   Expanded(
                     child: Column(
@@ -605,8 +615,13 @@ class _CompactChip extends StatelessWidget {
 class _ProcessingSeal extends StatelessWidget {
   final IconData icon;
   final Color color;
+  final String? imageAsset;
 
-  const _ProcessingSeal({required this.icon, required this.color});
+  const _ProcessingSeal({
+    required this.icon,
+    required this.color,
+    this.imageAsset,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -619,7 +634,20 @@ class _ProcessingSeal extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: color.withValues(alpha: 0.42)),
       ),
-      child: Icon(icon, color: color, size: 21),
+      child: imageAsset == null
+          ? Icon(icon, color: color, size: 21)
+          : ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: Image.asset(
+                imageAsset!,
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.none,
+                errorBuilder: (context, error, stackTrace) =>
+                    Icon(icon, color: color, size: 21),
+              ),
+            ),
     );
   }
 }
