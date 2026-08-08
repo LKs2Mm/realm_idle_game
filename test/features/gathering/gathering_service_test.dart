@@ -115,6 +115,21 @@ void main() {
     expect(state.activeGatheringSession!.resourceId, 'shrimp');
   });
 
+  test(
+    'clock jumping far forward caps offline gathering progress at 24h',
+    () {
+      service.selectResource('shrimp');
+      currentTime = currentTime.add(const Duration(days: 30));
+
+      final result = service.advanceTo(currentTime);
+
+      // 24h de tetos / 3s por ciclo do camarão = 28800, não os ~2.400.000
+      // ciclos que 30 dias renderiam sem o teto.
+      expect(result.completedCycles, 28800);
+      expect(state.gatheringInventory.quantityOf('shrimp'), 28800);
+    },
+  );
+
   test('clock moving backwards never generates rewards', () {
     service.selectResource('copper');
     currentTime = currentTime.subtract(const Duration(minutes: 10));

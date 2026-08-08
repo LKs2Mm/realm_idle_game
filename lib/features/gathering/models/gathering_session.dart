@@ -1,3 +1,5 @@
+import 'package:realm_idle_game/core/utils/offline_progress_policy.dart';
+
 class GatheringSession {
   final String resourceId;
   final int cycleDurationMilliseconds;
@@ -28,7 +30,10 @@ class GatheringSession {
   int elapsedMillisecondsAt(DateTime now) {
     final elapsedMilliseconds = now.millisecondsSinceEpoch - lastProcessedAt;
     if (elapsedMilliseconds <= 0) return 0;
-    return elapsedMilliseconds;
+    return elapsedMilliseconds.clamp(
+      0,
+      OfflineProgressPolicy.maxElapsedMilliseconds,
+    );
   }
 
   Map<String, dynamic> toJson() => {

@@ -1,3 +1,5 @@
+import 'package:realm_idle_game/core/utils/offline_progress_policy.dart';
+
 enum ProductionKind {
   equipment,
   spell,
@@ -102,7 +104,8 @@ class ProductionSession {
 
   int elapsedMillisecondsAt(DateTime timestamp) {
     final elapsed = timestamp.millisecondsSinceEpoch - lastProcessedAt;
-    return elapsed > 0 ? elapsed : 0;
+    if (elapsed <= 0) return 0;
+    return elapsed.clamp(0, OfflineProgressPolicy.maxElapsedMilliseconds);
   }
 
   Map<String, dynamic> toJson() => {

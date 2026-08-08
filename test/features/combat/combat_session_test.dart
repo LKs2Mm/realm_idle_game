@@ -86,6 +86,21 @@ void main() {
     );
   });
 
+  test('clock jumping far forward caps elapsed combat time at 24h', () {
+    final startedAt = DateTime(2026, 1, 1, 12);
+    final session = CombatSession(
+      encounterId: 'grave_rat',
+      cycleDurationMilliseconds: 4000,
+      timeRemainingMilliseconds: 4000,
+      lastProcessedAt: startedAt.millisecondsSinceEpoch,
+    );
+
+    expect(
+      session.elapsedMillisecondsAt(startedAt.add(const Duration(days: 30))),
+      const Duration(hours: 24).inMilliseconds,
+    );
+  });
+
   test('malformed persisted sessions are rejected', () {
     expect(
       () => CombatSession.fromJson({'encounterId': 'grave_rat'}),
