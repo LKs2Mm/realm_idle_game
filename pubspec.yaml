@@ -16,6 +16,33 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
+
+flutter_launcher_icons:
+  image_path: "assets/images/medieval/app-icon-realm-crest.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  macos:
+    generate: true
+    image_path: "assets/images/medieval/app-icon-realm-crest.png"
+  windows:
+    generate: true
+    image_path: "assets/images/medieval/app-icon-realm-crest.png"
+  web:
+    generate: true
+    image_path: "assets/images/medieval/app-icon-realm-crest.png"
+    background_color: "#0D0E10"
+    theme_color: "#0D0E10"
+
+flutter_native_splash:
+  color: "#0D0E10"
+  image: "assets/images/medieval/app-icon-realm-crest.png"
+  android_12:
+    image: "assets/images/medieval/app-icon-realm-crest.png"
+    color: "#0D0E10"
+  web: false
 
 flutter:
   uses-material-design: true
