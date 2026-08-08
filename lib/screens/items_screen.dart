@@ -1162,6 +1162,7 @@ class _AlchemyTab extends StatelessWidget {
                 return _ContentCard(
                   key: ValueKey<String>('potion-${potion.id}'),
                   sigil: potion.sigil,
+                  imageAsset: MedievalAssets.potionAsset(potion.id),
                   title: potion.name,
                   subtitle: potion.description,
                   detail:
@@ -1379,6 +1380,9 @@ class _ActiveBuffRow extends StatelessWidget {
         _SigilSeal(
           sigil: potion?.sigil ?? 'ᛟ',
           color: AppTheme.miningGreenLight,
+          imageAsset: potion == null
+              ? null
+              : MedievalAssets.potionAsset(potion!.id),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -1777,6 +1781,7 @@ class _ContentCard extends StatelessWidget {
   final String secondaryKey;
   final VoidCallback? onSecondary;
   final Color color;
+  final String? imageAsset;
 
   const _ContentCard({
     super.key,
@@ -1793,6 +1798,7 @@ class _ContentCard extends StatelessWidget {
     required this.secondaryKey,
     required this.onSecondary,
     required this.color,
+    this.imageAsset,
   });
 
   @override
@@ -1810,7 +1816,7 @@ class _ContentCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _SigilSeal(sigil: sigil, color: color),
+                  _SigilSeal(sigil: sigil, color: color, imageAsset: imageAsset),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -2036,8 +2042,9 @@ class _ItemSeal extends StatelessWidget {
 class _SigilSeal extends StatelessWidget {
   final String sigil;
   final Color color;
+  final String? imageAsset;
 
-  const _SigilSeal({required this.sigil, required this.color});
+  const _SigilSeal({required this.sigil, required this.color, this.imageAsset});
 
   @override
   Widget build(BuildContext context) {
@@ -2050,14 +2057,35 @@ class _SigilSeal extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: color.withValues(alpha: 0.42)),
       ),
-      child: Text(
-        sigil,
-        style: TextStyle(
-          color: color,
-          fontSize: 19,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
+      child: imageAsset == null
+          ? Text(
+              sigil,
+              style: TextStyle(
+                color: color,
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+              ),
+            )
+          : ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: Image.asset(
+                imageAsset!,
+                width: 42,
+                height: 42,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.none,
+                // Cobre magias, que ainda não têm arte gerada (Lote 5, metade
+                // pendente) — volta pro glifo unicode em vez de estourar erro.
+                errorBuilder: (context, error, stackTrace) => Text(
+                  sigil,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }

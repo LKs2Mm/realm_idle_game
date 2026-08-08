@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
 import 'package:realm_idle_game/core/theme/medieval_assets.dart';
+import 'package:realm_idle_game/features/content/data/potion_catalog.dart';
 import 'package:realm_idle_game/features/content/models/active_buffs.dart';
 import 'package:realm_idle_game/features/content/models/alchemy.dart';
 import 'package:realm_idle_game/features/content/models/content_cost.dart';
@@ -424,4 +425,92 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('brewable potions render their bottled art when it exists', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final potion = PotionCatalog.byId('gravefury_draught')!;
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        home: Scaffold(
+          body: ItemsScreen(
+            gameState: GameState(),
+            equipment: EquipmentState(),
+            contentInventory: ContentInventory(consumables: {potion.id: 1}),
+            equipmentDefinitions: const [],
+            potions: [potion],
+            spells: const [],
+            initialClass: HeroClass.knight,
+            workshopLevels: const {
+              EquipmentWorkshop.blacksmith: 1,
+              EquipmentWorkshop.veilGuild: 1,
+              EquipmentWorkshop.arcanist: 1,
+              EquipmentWorkshop.artisan: 1,
+            },
+            availableMaterials: const {},
+            availableGold: 0,
+            alchemyLevel: potion.requiredLevel,
+            magicLevel: 1,
+            activeBuffs: ActiveBuffs(
+              activeByType: {
+                potion.buffType: ActiveBuff(
+                  sourcePotionId: potion.id,
+                  type: potion.buffType,
+                  potency: potion.potency,
+                  startedAtEpochMilliseconds: now,
+                  expiresAtEpochMilliseconds: now + 65000,
+                ),
+              },
+            ),
+            activeSpellId: null,
+            activeProductionSession: null,
+            onCancelProduction: () {},
+            onCraftEquipment: (_) {},
+            onEquipItem: (_) {},
+            onBrewPotion: (_) {},
+            onUsePotion: (_) {},
+            onCraftSpell: (_) {},
+            onUseSpell: (_) {},
+            onStartProcessing: (_, _) {},
+            onEatFood: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    bool matchesPotionArt(Widget widget) {
+      if (widget is! Image) return false;
+      final image = widget.image;
+      if (image is! AssetImage) return false;
+      return image.assetName == MedievalAssets.potionAsset(potion.id);
+    }
+
+    final alchemyTab = find.byKey(const ValueKey<String>('items-tab-alchemy'));
+    await tester.ensureVisible(alchemyTab);
+    await tester.tap(alchemyTab);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey<String>('items-active-buffs')),
+        matching: find.byWidgetPredicate(matchesPotionArt),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey<String>('potion-${potion.id}')),
+        matching: find.byWidgetPredicate(matchesPotionArt),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }

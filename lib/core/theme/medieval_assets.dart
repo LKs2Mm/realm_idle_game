@@ -43,6 +43,9 @@ abstract final class MedievalAssets {
   /// `Realm Idle - Planejamento/11 - Guia de Estilo e Prompts de Arte.md`.
   static String equipmentAsset(String heroClassSaveKey, String slotSaveKey) =>
       'assets/images/medieval/gathering/equipamentos/${heroClassSaveKey}_$slotSaveKey.png';
+
+  static String potionAsset(String potionId) =>
+      'assets/images/medieval/gathering/pocoes/$potionId.png';
 }
 
 class MedievalEmblem extends StatelessWidget {
