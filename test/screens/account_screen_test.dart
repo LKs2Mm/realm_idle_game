@@ -49,6 +49,7 @@ void main() {
             musicVolume: 0.6,
             sfxVolume: 0.8,
             audioMuted: false,
+            notificationsEnabled: false,
             onProfileChanged: (name, title) {
               changedName = name;
               changedTitle = title;
@@ -58,6 +59,7 @@ void main() {
             onMusicVolumeChanged: (_) {},
             onSfxVolumeChanged: (_) {},
             onAudioMutedChanged: (_) {},
+            onNotificationsEnabledChanged: (_) {},
           ),
         ),
       ),
@@ -128,12 +130,14 @@ void main() {
               musicVolume: 0.6,
               sfxVolume: 0.8,
               audioMuted: false,
+              notificationsEnabled: false,
               onProfileChanged: (_, _) {},
               onSaveRequested: () {},
               onIdentityRequested: () {},
               onMusicVolumeChanged: (_) {},
               onSfxVolumeChanged: (_) {},
               onAudioMutedChanged: (_) {},
+              onNotificationsEnabledChanged: (_) {},
             ),
           ),
         ),
@@ -195,6 +199,7 @@ void main() {
             musicVolume: 0.6,
             sfxVolume: 0.8,
             audioMuted: false,
+            notificationsEnabled: false,
             onProfileChanged: (name, title) {
               changedName = name;
               changedTitle = title;
@@ -204,6 +209,7 @@ void main() {
             onMusicVolumeChanged: (_) {},
             onSfxVolumeChanged: (_) {},
             onAudioMutedChanged: (_) {},
+            onNotificationsEnabledChanged: (_) {},
           ),
         ),
       ),
@@ -249,12 +255,14 @@ void main() {
           musicVolume: 0.6,
           sfxVolume: 0.8,
           audioMuted: false,
+          notificationsEnabled: false,
           onProfileChanged: (_, _) {},
           onSaveRequested: () {},
           onIdentityRequested: () {},
           onMusicVolumeChanged: (_) {},
           onSfxVolumeChanged: (_) {},
           onAudioMutedChanged: (_) {},
+          onNotificationsEnabledChanged: (_) {},
         ),
       ),
     );
@@ -270,6 +278,54 @@ void main() {
     );
     expect(nameField.controller?.text, 'Lyra');
     expect(titleField.controller?.text, 'A Rúnica');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('toggles the notification preference', (tester) async {
+    tester.view.physicalSize = const Size(320, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    bool? notificationsRequest;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        home: Scaffold(
+          body: AccountScreen(
+            characterName: 'Aldren',
+            characterTitle: 'Sem título',
+            saveId: 'realm-7F2A',
+            createdAtLabel: '01/08/2026',
+            lastSavedAtLabel: 'agora',
+            classStats: const [],
+            chronicle: const [],
+            musicVolume: 0.6,
+            sfxVolume: 0.8,
+            audioMuted: false,
+            notificationsEnabled: false,
+            onProfileChanged: (_, _) {},
+            onSaveRequested: () {},
+            onIdentityRequested: () {},
+            onMusicVolumeChanged: (_) {},
+            onSfxVolumeChanged: (_) {},
+            onAudioMutedChanged: (_) {},
+            onNotificationsEnabledChanged: (value) =>
+                notificationsRequest = value,
+          ),
+        ),
+      ),
+    );
+
+    final notificationsSwitch = find.byKey(
+      const ValueKey<String>('account-notifications-enabled'),
+    );
+    await tester.ensureVisible(notificationsSwitch);
+    expect(tester.widget<SwitchListTile>(notificationsSwitch).value, isFalse);
+
+    await tester.tap(notificationsSwitch);
+    expect(notificationsRequest, isTrue);
     expect(tester.takeException(), isNull);
   });
 
@@ -298,12 +354,14 @@ void main() {
             musicVolume: 0.6,
             sfxVolume: 0.8,
             audioMuted: false,
+            notificationsEnabled: false,
             onProfileChanged: (_, _) {},
             onSaveRequested: () {},
             onIdentityRequested: () {},
             onMusicVolumeChanged: (value) => musicVolumeRequest = value,
             onSfxVolumeChanged: (value) => sfxVolumeRequest = value,
             onAudioMutedChanged: (value) => mutedRequest = value,
+            onNotificationsEnabledChanged: (_) {},
           ),
         ),
       ),
@@ -349,12 +407,14 @@ void main() {
             musicVolume: 0.6,
             sfxVolume: 0.8,
             audioMuted: true,
+            notificationsEnabled: false,
             onProfileChanged: (_, _) {},
             onSaveRequested: () {},
             onIdentityRequested: () {},
             onMusicVolumeChanged: (value) => musicVolumeRequest = value,
             onSfxVolumeChanged: (value) => sfxVolumeRequest = value,
             onAudioMutedChanged: (value) => mutedRequest = value,
+            onNotificationsEnabledChanged: (_) {},
           ),
         ),
       ),
@@ -411,12 +471,14 @@ void main() {
             musicVolume: 0.6,
             sfxVolume: 0.8,
             audioMuted: false,
+            notificationsEnabled: false,
             onProfileChanged: (_, _) {},
             onSaveRequested: () {},
             onIdentityRequested: () {},
             onMusicVolumeChanged: (_) {},
             onSfxVolumeChanged: (_) {},
             onAudioMutedChanged: (_) {},
+            onNotificationsEnabledChanged: (_) {},
           ),
         ),
       ),

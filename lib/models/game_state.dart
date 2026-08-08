@@ -22,6 +22,7 @@ import 'package:realm_idle_game/features/profile/models/player_profile.dart';
 import 'package:realm_idle_game/features/tools/data/tool_catalog.dart';
 import 'package:realm_idle_game/features/tools/models/tool_models.dart';
 import 'package:realm_idle_game/models/audio_settings.dart';
+import 'package:realm_idle_game/models/notification_settings.dart';
 import 'package:realm_idle_game/models/skill.dart';
 
 class GatheringReward {
@@ -58,6 +59,7 @@ class GameState {
   late ActiveBuffs activeBuffs;
   late PlayerProfile profile;
   AudioSettings audioSettings = AudioSettings();
+  NotificationSettings notificationSettings = NotificationSettings();
   bool hasSeenOnboarding = false;
   HeroClass activeHeroClass = HeroClass.knight;
   String? activeSpellId;
@@ -923,6 +925,10 @@ class GameState {
     hasSeenOnboarding = true;
   }
 
+  void setNotificationsEnabled(bool enabled) {
+    notificationSettings.enabled = enabled;
+  }
+
   String get saveIdentity {
     final fragment = profile.createdAt.toRadixString(16).toUpperCase();
     return 'realm-${fragment.length <= 8 ? fragment : fragment.substring(fragment.length - 8)}';
@@ -957,6 +963,7 @@ class GameState {
     'visitedRegionIds': visitedRegionIds.toList(growable: false),
     'combatDropRemainders': combatDropRemainders,
     'audioSettings': audioSettings.toJson(),
+    'notificationSettings': notificationSettings.toJson(),
     'hasSeenOnboarding': hasSeenOnboarding,
   };
 
@@ -1030,6 +1037,9 @@ class GameState {
     state.activeBuffs.pruneExpired(DateTime.now());
     state.profile = PlayerProfile.fromJson(json['profile']);
     state.audioSettings = AudioSettings.fromJson(json['audioSettings']);
+    state.notificationSettings = NotificationSettings.fromJson(
+      json['notificationSettings'],
+    );
     // Saves gravados antes do onboarding existir não têm essa chave — trata
     // como "já viu" pra não reexibir o tutorial pra quem já está em progresso.
     state.hasSeenOnboarding = json.containsKey('hasSeenOnboarding')

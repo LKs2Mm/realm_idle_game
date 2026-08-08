@@ -25,6 +25,7 @@ import 'package:realm_idle_game/screens/items_screen.dart';
 import 'package:realm_idle_game/screens/maps_screen.dart';
 import 'package:realm_idle_game/screens/skills_screen.dart';
 import 'package:realm_idle_game/services/audio_service.dart';
+import 'package:realm_idle_game/services/notification_service.dart';
 import 'package:realm_idle_game/services/storage_service.dart';
 import 'package:realm_idle_game/widgets/header_widget.dart';
 import 'package:realm_idle_game/widgets/onboarding_overlay.dart';
@@ -95,6 +96,7 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
       _showOnboarding = !gameState.hasSeenOnboarding;
     });
     unawaited(AudioService.initialize(gameState.audioSettings));
+    unawaited(NotificationService.initialize());
     _updateMusicForScreen();
     if (gatheringReport.hasRewards ||
         combatReport.hasRewards ||
@@ -169,6 +171,32 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
     _gameState.completeOnboarding();
     setState(() => _showOnboarding = false);
     _saveState();
+  }
+
+  void _setNotificationsEnabled(bool enabled) {
+    _gameState.setNotificationsEnabled(enabled);
+    if (enabled) {
+      unawaited(NotificationService.requestPermission());
+    } else {
+      unawaited(NotificationService.cancelAll());
+    }
+    setState(() {});
+    _saveState();
+  }
+
+  void _scheduleBackgroundReminders() {
+    if (!_gameState.notificationSettings.enabled) return;
+    final production = _gameState.activeProductionSession;
+    if (production != null && production.timeRemainingMilliseconds > 0) {
+      unawaited(
+        NotificationService.scheduleProductionComplete(
+          Duration(milliseconds: production.timeRemainingMilliseconds),
+        ),
+      );
+    }
+    unawaited(
+      NotificationService.scheduleReturnReminder(const Duration(hours: 8)),
+    );
   }
 
   void _dismissOfflineGatheringReport() {
@@ -383,6 +411,7 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
 
     if (state == AppLifecycleState.resumed) {
       unawaited(AudioService.resumeMusic());
+      unawaited(NotificationService.cancelAll());
       final now = DateTime.now();
       final gatheringReport = _gatheringService.advanceTo(now);
       final combatReport = _combatService.advanceTo(now);
@@ -410,6 +439,7 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
         state == AppLifecycleState.detached ||
         state == AppLifecycleState.hidden) {
       unawaited(AudioService.pauseMusic());
+      _scheduleBackgroundReminders();
       _saveState();
     }
   }
@@ -595,12 +625,14 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
           musicVolume: _gameState.audioSettings.musicVolume,
           sfxVolume: _gameState.audioSettings.sfxVolume,
           audioMuted: _gameState.audioSettings.muted,
+          notificationsEnabled: _gameState.notificationSettings.enabled,
           onProfileChanged: _updateProfile,
           onSaveRequested: _saveNow,
           onIdentityRequested: _copyIdentity,
           onMusicVolumeChanged: _setMusicVolume,
           onSfxVolumeChanged: _setSfxVolume,
           onAudioMutedChanged: _setAudioMuted,
+          onNotificationsEnabledChanged: _setNotificationsEnabled,
         );
       default:
         return SkillsScreen(gameState: _gameState, onOpenSkill: _openSkill);

@@ -429,6 +429,24 @@ void main() {
 
       expect(state.hasSeenOnboarding, isFalse);
     });
+
+    test('defaults notifications to disabled for saves predating them', () {
+      final state = GameState.fromJson({'gold': 10});
+
+      expect(state.notificationSettings.enabled, isFalse);
+    });
+
+    test('round-trips the notification preference', () {
+      final state = GameState()..setNotificationsEnabled(true);
+
+      final restored = GameState.fromJson(
+        Map<String, dynamic>.from(
+          jsonDecode(jsonEncode(state.toJson())) as Map,
+        ),
+      );
+
+      expect(restored.notificationSettings.enabled, isTrue);
+    });
   });
 
   group('Gathering tools', () {

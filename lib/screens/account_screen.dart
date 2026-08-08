@@ -45,12 +45,14 @@ class AccountScreen extends StatefulWidget {
   final double musicVolume;
   final double sfxVolume;
   final bool audioMuted;
+  final bool notificationsEnabled;
   final ProfileChangedCallback onProfileChanged;
   final VoidCallback onSaveRequested;
   final VoidCallback onIdentityRequested;
   final ValueChanged<double> onMusicVolumeChanged;
   final ValueChanged<double> onSfxVolumeChanged;
   final ValueChanged<bool> onAudioMutedChanged;
+  final ValueChanged<bool> onNotificationsEnabledChanged;
 
   const AccountScreen({
     super.key,
@@ -64,12 +66,14 @@ class AccountScreen extends StatefulWidget {
     required this.musicVolume,
     required this.sfxVolume,
     required this.audioMuted,
+    required this.notificationsEnabled,
     required this.onProfileChanged,
     required this.onSaveRequested,
     required this.onIdentityRequested,
     required this.onMusicVolumeChanged,
     required this.onSfxVolumeChanged,
     required this.onAudioMutedChanged,
+    required this.onNotificationsEnabledChanged,
   });
 
   @override
@@ -179,6 +183,17 @@ class _AccountScreenState extends State<AccountScreen> {
             onMusicVolumeChanged: widget.onMusicVolumeChanged,
             onSfxVolumeChanged: widget.onSfxVolumeChanged,
             onMutedChanged: widget.onAudioMutedChanged,
+          ),
+          const SizedBox(height: 20),
+          const _SectionTitle(
+            icon: Icons.notifications_outlined,
+            title: 'NOTIFICAÇÕES',
+            detail: 'Avisos de retorno',
+          ),
+          const SizedBox(height: 9),
+          _NotificationSettingsCard(
+            enabled: widget.notificationsEnabled,
+            onChanged: widget.onNotificationsEnabledChanged,
           ),
           const SizedBox(height: 20),
           const _SectionTitle(
@@ -592,6 +607,51 @@ class _AudioSettingsCard extends StatelessWidget {
                 value: sfxVolume,
                 enabled: !muted,
                 onChanged: onSfxVolumeChanged,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationSettingsCard extends StatelessWidget {
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  const _NotificationSettingsCard({
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: RunicFrame(
+        color: AppTheme.accentYellow,
+        opacity: 0.45,
+        child: Padding(
+          padding: const EdgeInsets.all(13),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SwitchListTile(
+                key: const ValueKey<String>('account-notifications-enabled'),
+                contentPadding: EdgeInsets.zero,
+                value: enabled,
+                onChanged: onChanged,
+                title: const Text('Avisar quando a produção terminar'),
+                subtitle: const Text(
+                  'E um lembrete se o herói ficar parado por um tempo.',
+                ),
+                secondary: Icon(
+                  enabled
+                      ? Icons.notifications_active_outlined
+                      : Icons.notifications_off_outlined,
+                  color: AppTheme.accentYellow,
+                ),
               ),
             ],
           ),
