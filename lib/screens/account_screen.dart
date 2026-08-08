@@ -42,9 +42,15 @@ class AccountScreen extends StatefulWidget {
   final String lastSavedAtLabel;
   final List<AccountClassStats> classStats;
   final List<AccountChronicleEntry> chronicle;
+  final double musicVolume;
+  final double sfxVolume;
+  final bool audioMuted;
   final ProfileChangedCallback onProfileChanged;
   final VoidCallback onSaveRequested;
   final VoidCallback onIdentityRequested;
+  final ValueChanged<double> onMusicVolumeChanged;
+  final ValueChanged<double> onSfxVolumeChanged;
+  final ValueChanged<bool> onAudioMutedChanged;
 
   const AccountScreen({
     super.key,
@@ -55,9 +61,15 @@ class AccountScreen extends StatefulWidget {
     required this.lastSavedAtLabel,
     required this.classStats,
     required this.chronicle,
+    required this.musicVolume,
+    required this.sfxVolume,
+    required this.audioMuted,
     required this.onProfileChanged,
     required this.onSaveRequested,
     required this.onIdentityRequested,
+    required this.onMusicVolumeChanged,
+    required this.onSfxVolumeChanged,
+    required this.onAudioMutedChanged,
   });
 
   @override
@@ -153,6 +165,21 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           const SizedBox(height: 9),
           _Chronicle(entries: widget.chronicle),
+          const SizedBox(height: 20),
+          const _SectionTitle(
+            icon: Icons.volume_up_outlined,
+            title: 'ÁUDIO',
+            detail: 'Trilha e efeitos',
+          ),
+          const SizedBox(height: 9),
+          _AudioSettingsCard(
+            musicVolume: widget.musicVolume,
+            sfxVolume: widget.sfxVolume,
+            muted: widget.audioMuted,
+            onMusicVolumeChanged: widget.onMusicVolumeChanged,
+            onSfxVolumeChanged: widget.onSfxVolumeChanged,
+            onMutedChanged: widget.onAudioMutedChanged,
+          ),
           const SizedBox(height: 20),
           const _SectionTitle(
             icon: Icons.save_outlined,
@@ -506,6 +533,117 @@ class _SaveIdentityCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AudioSettingsCard extends StatelessWidget {
+  final double musicVolume;
+  final double sfxVolume;
+  final bool muted;
+  final ValueChanged<double> onMusicVolumeChanged;
+  final ValueChanged<double> onSfxVolumeChanged;
+  final ValueChanged<bool> onMutedChanged;
+
+  const _AudioSettingsCard({
+    required this.musicVolume,
+    required this.sfxVolume,
+    required this.muted,
+    required this.onMusicVolumeChanged,
+    required this.onSfxVolumeChanged,
+    required this.onMutedChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: RunicFrame(
+        color: AppTheme.accentYellow,
+        opacity: 0.45,
+        child: Padding(
+          padding: const EdgeInsets.all(13),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SwitchListTile(
+                key: const ValueKey<String>('account-audio-mute'),
+                contentPadding: EdgeInsets.zero,
+                value: muted,
+                onChanged: onMutedChanged,
+                title: const Text('Silenciar tudo'),
+                secondary: Icon(
+                  muted ? Icons.volume_off_outlined : Icons.volume_up_outlined,
+                  color: AppTheme.accentYellow,
+                ),
+              ),
+              _VolumeSlider(
+                sliderKey: const ValueKey<String>('account-audio-music'),
+                icon: Icons.music_note_outlined,
+                label: 'Música',
+                value: musicVolume,
+                enabled: !muted,
+                onChanged: onMusicVolumeChanged,
+              ),
+              _VolumeSlider(
+                sliderKey: const ValueKey<String>('account-audio-sfx'),
+                icon: Icons.graphic_eq_outlined,
+                label: 'Efeitos',
+                value: sfxVolume,
+                enabled: !muted,
+                onChanged: onSfxVolumeChanged,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VolumeSlider extends StatelessWidget {
+  final Key sliderKey;
+  final IconData icon;
+  final String label;
+  final double value;
+  final bool enabled;
+  final ValueChanged<double> onChanged;
+
+  const _VolumeSlider({
+    required this.sliderKey,
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppTheme.textSecondary),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 56,
+          child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ),
+        Expanded(
+          child: Slider(
+            key: sliderKey,
+            value: value.clamp(0.0, 1.0),
+            onChanged: enabled ? onChanged : null,
+          ),
+        ),
+        SizedBox(
+          width: 32,
+          child: Text(
+            '${(value.clamp(0.0, 1.0) * 100).round()}%',
+            textAlign: TextAlign.end,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ],
     );
   }
 }

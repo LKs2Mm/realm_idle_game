@@ -46,12 +46,18 @@ void main() {
                 dateLabel: 'Hoje',
               ),
             ],
+            musicVolume: 0.6,
+            sfxVolume: 0.8,
+            audioMuted: false,
             onProfileChanged: (name, title) {
               changedName = name;
               changedTitle = title;
             },
             onSaveRequested: () => saveRequests++,
             onIdentityRequested: () => identityRequests++,
+            onMusicVolumeChanged: (_) {},
+            onSfxVolumeChanged: (_) {},
+            onAudioMutedChanged: (_) {},
           ),
         ),
       ),
@@ -119,9 +125,15 @@ void main() {
                 ),
               ],
               chronicle: const [],
+              musicVolume: 0.6,
+              sfxVolume: 0.8,
+              audioMuted: false,
               onProfileChanged: (_, _) {},
               onSaveRequested: () {},
               onIdentityRequested: () {},
+              onMusicVolumeChanged: (_) {},
+              onSfxVolumeChanged: (_) {},
+              onAudioMutedChanged: (_) {},
             ),
           ),
         ),
@@ -180,12 +192,18 @@ void main() {
             lastSavedAtLabel: 'agora',
             classStats: const [],
             chronicle: const [],
+            musicVolume: 0.6,
+            sfxVolume: 0.8,
+            audioMuted: false,
             onProfileChanged: (name, title) {
               changedName = name;
               changedTitle = title;
             },
             onSaveRequested: () {},
             onIdentityRequested: () {},
+            onMusicVolumeChanged: (_) {},
+            onSfxVolumeChanged: (_) {},
+            onAudioMutedChanged: (_) {},
           ),
         ),
       ),
@@ -228,9 +246,15 @@ void main() {
           lastSavedAtLabel: 'agora',
           classStats: const [],
           chronicle: const [],
+          musicVolume: 0.6,
+          sfxVolume: 0.8,
+          audioMuted: false,
           onProfileChanged: (_, _) {},
           onSaveRequested: () {},
           onIdentityRequested: () {},
+          onMusicVolumeChanged: (_) {},
+          onSfxVolumeChanged: (_) {},
+          onAudioMutedChanged: (_) {},
         ),
       ),
     );
@@ -246,6 +270,92 @@ void main() {
     );
     expect(nameField.controller?.text, 'Lyra');
     expect(titleField.controller?.text, 'A Rúnica');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('mutes audio and disables the volume sliders', (tester) async {
+    tester.view.physicalSize = const Size(320, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    bool? mutedRequest;
+    double? musicVolumeRequest;
+    double? sfxVolumeRequest;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        home: Scaffold(
+          body: AccountScreen(
+            characterName: 'Aldren',
+            characterTitle: 'Sem título',
+            saveId: 'realm-7F2A',
+            createdAtLabel: '01/08/2026',
+            lastSavedAtLabel: 'agora',
+            classStats: const [],
+            chronicle: const [],
+            musicVolume: 0.6,
+            sfxVolume: 0.8,
+            audioMuted: false,
+            onProfileChanged: (_, _) {},
+            onSaveRequested: () {},
+            onIdentityRequested: () {},
+            onMusicVolumeChanged: (value) => musicVolumeRequest = value,
+            onSfxVolumeChanged: (value) => sfxVolumeRequest = value,
+            onAudioMutedChanged: (value) => mutedRequest = value,
+          ),
+        ),
+      ),
+    );
+
+    final musicSlider = find.byKey(
+      const ValueKey<String>('account-audio-music'),
+    );
+    final sfxSlider = find.byKey(const ValueKey<String>('account-audio-sfx'));
+    await tester.ensureVisible(musicSlider);
+    expect(tester.widget<Slider>(musicSlider).value, closeTo(0.6, 0.001));
+    expect(tester.widget<Slider>(sfxSlider).value, closeTo(0.8, 0.001));
+
+    await tester.drag(musicSlider, const Offset(-80, 0));
+    expect(musicVolumeRequest, isNotNull);
+
+    final muteSwitch = find.byKey(
+      const ValueKey<String>('account-audio-mute'),
+    );
+    await tester.ensureVisible(muteSwitch);
+    await tester.tap(muteSwitch);
+    expect(mutedRequest, isTrue);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        home: Scaffold(
+          body: AccountScreen(
+            characterName: 'Aldren',
+            characterTitle: 'Sem título',
+            saveId: 'realm-7F2A',
+            createdAtLabel: '01/08/2026',
+            lastSavedAtLabel: 'agora',
+            classStats: const [],
+            chronicle: const [],
+            musicVolume: 0.6,
+            sfxVolume: 0.8,
+            audioMuted: true,
+            onProfileChanged: (_, _) {},
+            onSaveRequested: () {},
+            onIdentityRequested: () {},
+            onMusicVolumeChanged: (value) => musicVolumeRequest = value,
+            onSfxVolumeChanged: (value) => sfxVolumeRequest = value,
+            onAudioMutedChanged: (value) => mutedRequest = value,
+          ),
+        ),
+      ),
+    );
+    await tester.ensureVisible(musicSlider);
+    expect(tester.widget<Slider>(musicSlider).onChanged, isNull);
+    expect(tester.widget<Slider>(sfxSlider).onChanged, isNull);
+    expect(sfxVolumeRequest, isNull);
     expect(tester.takeException(), isNull);
   });
 }

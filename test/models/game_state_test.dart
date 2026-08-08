@@ -5,6 +5,7 @@ import 'package:realm_idle_game/features/combat/models/combat_encounter.dart';
 import 'package:realm_idle_game/features/gathering/models/gathering_resource.dart';
 import 'package:realm_idle_game/features/tools/data/tool_catalog.dart';
 import 'package:realm_idle_game/features/tools/models/tool_models.dart';
+import 'package:realm_idle_game/models/audio_settings.dart';
 import 'package:realm_idle_game/models/game_state.dart';
 import 'package:realm_idle_game/models/skill.dart';
 
@@ -362,6 +363,40 @@ void main() {
         state.tools.equippedId(GatheringDiscipline.mining),
         'pickaxe:wooden',
       );
+    });
+
+    test('defaults audio settings for saves predating them', () {
+      final state = GameState.fromJson({'gold': 10});
+
+      expect(state.audioSettings.musicVolume, AudioSettings.defaultMusicVolume);
+      expect(state.audioSettings.sfxVolume, AudioSettings.defaultSfxVolume);
+      expect(state.audioSettings.muted, isFalse);
+    });
+
+    test('round-trips custom audio settings', () {
+      final state = GameState()
+        ..setMusicVolume(0.25)
+        ..setSfxVolume(0.9)
+        ..setAudioMuted(true);
+
+      final restored = GameState.fromJson(
+        Map<String, dynamic>.from(
+          jsonDecode(jsonEncode(state.toJson())) as Map,
+        ),
+      );
+
+      expect(restored.audioSettings.musicVolume, 0.25);
+      expect(restored.audioSettings.sfxVolume, 0.9);
+      expect(restored.audioSettings.muted, isTrue);
+    });
+
+    test('clamps audio volumes to the valid range', () {
+      final state = GameState()
+        ..setMusicVolume(-1)
+        ..setSfxVolume(5);
+
+      expect(state.audioSettings.musicVolume, 0.0);
+      expect(state.audioSettings.sfxVolume, 1.0);
     });
   });
 

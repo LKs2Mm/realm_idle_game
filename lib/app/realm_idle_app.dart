@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:realm_idle_game/core/audio/audio_assets.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
 import 'package:realm_idle_game/core/theme/medieval_background.dart';
 import 'package:realm_idle_game/core/theme/runic_ornaments.dart';
@@ -23,6 +24,7 @@ import 'package:realm_idle_game/screens/combat_screen.dart';
 import 'package:realm_idle_game/screens/items_screen.dart';
 import 'package:realm_idle_game/screens/maps_screen.dart';
 import 'package:realm_idle_game/screens/skills_screen.dart';
+import 'package:realm_idle_game/services/audio_service.dart';
 import 'package:realm_idle_game/services/storage_service.dart';
 import 'package:realm_idle_game/widgets/header_widget.dart';
 
@@ -89,6 +91,8 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
       _lastSavedAt = DateTime.now();
       _isLoading = false;
     });
+    unawaited(AudioService.initialize(gameState.audioSettings));
+    _updateMusicForScreen();
     if (gatheringReport.hasRewards ||
         combatReport.hasRewards ||
         productionReport.hasReward) {
@@ -125,6 +129,37 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
   void _saveState() {
     _lastSavedAt = DateTime.now();
     unawaited(StorageService.saveGameState(_gameState));
+  }
+
+  void _updateMusicForScreen() {
+    unawaited(
+      AudioService.playMusic(
+        _selectedIndex == 2
+            ? AudioAssets.combatTheme
+            : AudioAssets.explorationTheme,
+      ),
+    );
+  }
+
+  void _setMusicVolume(double volume) {
+    _gameState.setMusicVolume(volume);
+    unawaited(AudioService.applySettings(_gameState.audioSettings));
+    setState(() {});
+    _saveState();
+  }
+
+  void _setSfxVolume(double volume) {
+    _gameState.setSfxVolume(volume);
+    unawaited(AudioService.applySettings(_gameState.audioSettings));
+    setState(() {});
+    _saveState();
+  }
+
+  void _setAudioMuted(bool muted) {
+    _gameState.setAudioMuted(muted);
+    unawaited(AudioService.applySettings(_gameState.audioSettings));
+    setState(() {});
+    _saveState();
   }
 
   void _dismissOfflineGatheringReport() {
@@ -338,6 +373,7 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
     if (_isLoading) return;
 
     if (state == AppLifecycleState.resumed) {
+      unawaited(AudioService.resumeMusic());
       final now = DateTime.now();
       final gatheringReport = _gatheringService.advanceTo(now);
       final combatReport = _combatService.advanceTo(now);
@@ -364,6 +400,7 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.detached ||
         state == AppLifecycleState.hidden) {
+      unawaited(AudioService.pauseMusic());
       _saveState();
     }
   }
@@ -492,10 +529,13 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
           offlineReport: _offlineGatheringReport,
           onDismissOfflineReport: _dismissOfflineGatheringReport,
           initialDiscipline: _selectedGatheringDiscipline,
-          onOpenTools: (discipline) => setState(() {
-            _selectedToolDiscipline = discipline;
-            _selectedIndex = 5;
-          }),
+          onOpenTools: (discipline) {
+            setState(() {
+              _selectedToolDiscipline = discipline;
+              _selectedIndex = 5;
+            });
+            _updateMusicForScreen();
+          },
         );
       case 2:
         return CombatScreen(
@@ -545,9 +585,15 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
               ),
           ],
           chronicle: _buildChronicle(),
+          musicVolume: _gameState.audioSettings.musicVolume,
+          sfxVolume: _gameState.audioSettings.sfxVolume,
+          audioMuted: _gameState.audioSettings.muted,
           onProfileChanged: _updateProfile,
           onSaveRequested: _saveNow,
           onIdentityRequested: _copyIdentity,
+          onMusicVolumeChanged: _setMusicVolume,
+          onSfxVolumeChanged: _setSfxVolume,
+          onAudioMutedChanged: _setAudioMuted,
         );
       default:
         return SkillsScreen(gameState: _gameState, onOpenSkill: _openSkill);
@@ -590,6 +636,7 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
         _selectedGatheringDiscipline = discipline;
         _selectedIndex = 1;
       });
+      _updateMusicForScreen();
       return;
     }
 
@@ -599,11 +646,13 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
         _selectedItemsTabIndex = itemsTab;
         _selectedIndex = 3;
       });
+      _updateMusicForScreen();
       return;
     }
 
     if (_combatSkillIds.contains(skillId)) {
       setState(() => _selectedIndex = 2);
+      _updateMusicForScreen();
     }
   }
 
@@ -666,9 +715,12 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
           currentIndex: _bottomNavScreenIndices
               .indexOf(_selectedIndex)
               .clamp(0, _bottomNavScreenIndices.length - 1),
-          onTap: (visibleIndex) => setState(
-            () => _selectedIndex = _bottomNavScreenIndices[visibleIndex],
-          ),
+          onTap: (visibleIndex) {
+            setState(
+              () => _selectedIndex = _bottomNavScreenIndices[visibleIndex],
+            );
+            _updateMusicForScreen();
+          },
           selectedFontSize: 9,
           unselectedFontSize: 8,
           showSelectedLabels: true,

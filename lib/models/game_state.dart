@@ -21,6 +21,7 @@ import 'package:realm_idle_game/features/production/models/production_session.da
 import 'package:realm_idle_game/features/profile/models/player_profile.dart';
 import 'package:realm_idle_game/features/tools/data/tool_catalog.dart';
 import 'package:realm_idle_game/features/tools/models/tool_models.dart';
+import 'package:realm_idle_game/models/audio_settings.dart';
 import 'package:realm_idle_game/models/skill.dart';
 
 class GatheringReward {
@@ -56,6 +57,7 @@ class GameState {
   late ContentInventory contentInventory;
   late ActiveBuffs activeBuffs;
   late PlayerProfile profile;
+  AudioSettings audioSettings = AudioSettings();
   HeroClass activeHeroClass = HeroClass.knight;
   String? activeSpellId;
   final Map<HeroClass, int> classVictories = {
@@ -904,6 +906,18 @@ class GameState {
     profile.chooseTitle(title);
   }
 
+  void setMusicVolume(double volume) {
+    audioSettings.musicVolume = volume.clamp(0.0, 1.0);
+  }
+
+  void setSfxVolume(double volume) {
+    audioSettings.sfxVolume = volume.clamp(0.0, 1.0);
+  }
+
+  void setAudioMuted(bool muted) {
+    audioSettings.muted = muted;
+  }
+
   String get saveIdentity {
     final fragment = profile.createdAt.toRadixString(16).toUpperCase();
     return 'realm-${fragment.length <= 8 ? fragment : fragment.substring(fragment.length - 8)}';
@@ -937,6 +951,7 @@ class GameState {
     },
     'visitedRegionIds': visitedRegionIds.toList(growable: false),
     'combatDropRemainders': combatDropRemainders,
+    'audioSettings': audioSettings.toJson(),
   };
 
   factory GameState.fromJson(Map<String, dynamic> json) {
@@ -1008,6 +1023,7 @@ class GameState {
     state.activeBuffs = ActiveBuffs.fromJson(json['activeBuffs']);
     state.activeBuffs.pruneExpired(DateTime.now());
     state.profile = PlayerProfile.fromJson(json['profile']);
+    state.audioSettings = AudioSettings.fromJson(json['audioSettings']);
 
     final savedHeroClass = _heroClassFromKey(json['activeHeroClass']);
     state.activeHeroClass = savedHeroClass ?? HeroClass.knight;
