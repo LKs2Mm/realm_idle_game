@@ -634,7 +634,13 @@ class _WorkshopChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(_workshopIcon(workshop), size: 13, color: color),
+            MedievalEmblem(
+              assetPath: MedievalAssets.workshopAsset(
+                _workshopAssetKey(workshop),
+              ),
+              size: 13,
+              semanticLabel: workshop.displayName,
+            ),
             const SizedBox(width: 4),
             Text(
               workshop.displayName,
@@ -699,10 +705,10 @@ String _skillName(String id) => switch (id) {
   _ => id,
 };
 
-IconData _workshopIcon(WorkshopType workshop) => switch (workshop) {
-  WorkshopType.forge => Icons.hardware_outlined,
-  WorkshopType.artisanWorkshop => Icons.handyman_outlined,
-  WorkshopType.arcanistSanctum => Icons.auto_fix_high,
-  WorkshopType.shadowAtelier => Icons.visibility_off_outlined,
-  WorkshopType.alchemyLaboratory => Icons.science_outlined,
+String _workshopAssetKey(WorkshopType workshop) => switch (workshop) {
+  WorkshopType.forge => 'blacksmith',
+  WorkshopType.artisanWorkshop => 'artisan',
+  WorkshopType.arcanistSanctum => 'arcanist',
+  WorkshopType.shadowAtelier => 'veil_guild',
+  WorkshopType.alchemyLaboratory => 'alchemy_lab',
 };
