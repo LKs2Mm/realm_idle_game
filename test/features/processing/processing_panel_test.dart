@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
 import 'package:realm_idle_game/core/theme/medieval_assets.dart';
+import 'package:realm_idle_game/features/equipment/models/equipment_models.dart';
 import 'package:realm_idle_game/features/processing/data/cooking_recipe_catalog.dart';
 import 'package:realm_idle_game/features/processing/data/skewer_recipe_catalog.dart';
 import 'package:realm_idle_game/features/processing/data/smelting_recipe_catalog.dart';
@@ -248,6 +249,42 @@ void main() {
       find.descendant(
         of: find.byKey(ValueKey<String>('processing-card-${cooking.id}')),
         matching: find.byWidgetPredicate(matchesFoodArt),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('renders metal bar art on smelting recipe cards', (
+    tester,
+  ) async {
+    configureMobileView(tester);
+    final state = GameState();
+    final smelting = SmeltingRecipeCatalog.forMaterial(
+      EquipmentMaterial.copper,
+    )!;
+
+    await tester.pumpWidget(
+      app(
+        state: state,
+        onStart: (_, _) {},
+        onEat: (_) {},
+        onCancel: () {},
+      ),
+    );
+
+    bool matchesBarArt(Widget widget) {
+      if (widget is! Image) return false;
+      final image = widget.image;
+      if (image is! AssetImage) return false;
+      return image.assetName ==
+          MedievalAssets.gatheringItemAsset('barras', smelting.output.resourceId);
+    }
+
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey<String>('processing-card-${smelting.id}')),
+        matching: find.byWidgetPredicate(matchesBarArt),
       ),
       findsOneWidget,
     );

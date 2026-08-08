@@ -12,6 +12,7 @@ import 'package:realm_idle_game/features/content/models/spell.dart';
 import 'package:realm_idle_game/features/equipment/data/equipment_catalog.dart';
 import 'package:realm_idle_game/features/equipment/models/equipment_models.dart';
 import 'package:realm_idle_game/features/processing/data/cooking_recipe_catalog.dart';
+import 'package:realm_idle_game/features/processing/data/smelting_recipe_catalog.dart';
 import 'package:realm_idle_game/features/production/models/production_session.dart';
 import 'package:realm_idle_game/models/game_state.dart';
 import 'package:realm_idle_game/screens/items_screen.dart';
@@ -584,6 +585,82 @@ void main() {
       find.descendant(
         of: find.byKey(ValueKey<String>('material-${cooking.foodId}')),
         matching: find.byWidgetPredicate(matchesFoodArt),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('processed metal bars render their art in Materials tab', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final smelting = SmeltingRecipeCatalog.forMaterial(
+      EquipmentMaterial.copper,
+    )!;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        home: Scaffold(
+          body: ItemsScreen(
+            gameState: GameState(),
+            equipment: EquipmentState(),
+            contentInventory: ContentInventory(),
+            equipmentDefinitions: const [],
+            potions: const [],
+            spells: const [],
+            initialClass: HeroClass.knight,
+            workshopLevels: const {
+              EquipmentWorkshop.blacksmith: 1,
+              EquipmentWorkshop.veilGuild: 1,
+              EquipmentWorkshop.arcanist: 1,
+              EquipmentWorkshop.artisan: 1,
+            },
+            availableMaterials: {smelting.output.resourceId: 3},
+            availableGold: 0,
+            alchemyLevel: 1,
+            magicLevel: 1,
+            activeBuffs: ActiveBuffs(),
+            activeSpellId: null,
+            activeProductionSession: null,
+            onCancelProduction: () {},
+            onCraftEquipment: (_) {},
+            onEquipItem: (_) {},
+            onBrewPotion: (_) {},
+            onUsePotion: (_) {},
+            onCraftSpell: (_) {},
+            onUseSpell: (_) {},
+            onStartProcessing: (_, _) {},
+            onEatFood: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    final materialsTab = find.byKey(
+      const ValueKey<String>('items-tab-materials'),
+    );
+    await tester.ensureVisible(materialsTab);
+    await tester.tap(materialsTab);
+    await tester.pumpAndSettle();
+
+    bool matchesBarArt(Widget widget) {
+      if (widget is! Image) return false;
+      final image = widget.image;
+      if (image is! AssetImage) return false;
+      return image.assetName ==
+          MedievalAssets.gatheringItemAsset('barras', smelting.output.resourceId);
+    }
+
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey<String>('material-${smelting.output.resourceId}')),
+        matching: find.byWidgetPredicate(matchesBarArt),
       ),
       findsOneWidget,
     );

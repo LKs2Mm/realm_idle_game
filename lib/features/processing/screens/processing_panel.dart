@@ -402,12 +402,7 @@ class _ProcessingRecipeCard extends StatelessWidget {
                   _ProcessingSeal(
                     icon: _kindIcon(recipe.kind),
                     color: color,
-                    imageAsset: cookingRecipe == null
-                        ? null
-                        : MedievalAssets.gatheringItemAsset(
-                            'comidas',
-                            cookingRecipe.foodId,
-                          ),
+                    imageAsset: _processedGoodAsset(recipe),
                   ),
                   const SizedBox(width: 9),
                   Expanded(
@@ -709,6 +704,20 @@ String _formatExperience(double experience) {
       ? rounded.toInt().toString()
       : experience.toStringAsFixed(1);
 }
+
+String? _processedGoodAsset(ProcessingRecipe recipe) => switch (recipe) {
+  SmeltingRecipe() ||
+  ArcaneRefiningRecipe() => MedievalAssets.gatheringItemAsset(
+    'barras',
+    recipe.output.resourceId,
+  ),
+  SkewerRecipe() => MedievalAssets.gatheringItemAsset('barras', 'wooden_skewer'),
+  CookingRecipe() => MedievalAssets.gatheringItemAsset(
+    'comidas',
+    recipe.output.resourceId,
+  ),
+  _ => null,
+};
 
 Color _kindColor(ProcessingKind kind) => switch (kind) {
   ProcessingKind.smelting => AppTheme.smithingOrange,

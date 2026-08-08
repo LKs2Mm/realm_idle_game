@@ -1704,9 +1704,7 @@ class _OwnedMaterial {
       icon: icon,
       sigil: null,
       color: color,
-      imageAsset: recipe.kind == ProcessingKind.cooking
-          ? MedievalAssets.gatheringItemAsset('comidas', recipe.output.resourceId)
-          : null,
+      imageAsset: _processedGoodAsset(recipe),
     );
   }
 }
@@ -2164,6 +2162,20 @@ String _dropRarityName(CombatDropRarity rarity) => switch (rarity) {
   CombatDropRarity.rare => 'Raro',
   CombatDropRarity.epic => 'Épico',
   CombatDropRarity.legendary => 'Lendário',
+};
+
+String? _processedGoodAsset(ProcessingRecipe recipe) => switch (recipe) {
+  SmeltingRecipe() ||
+  ArcaneRefiningRecipe() => MedievalAssets.gatheringItemAsset(
+    'barras',
+    recipe.output.resourceId,
+  ),
+  SkewerRecipe() => MedievalAssets.gatheringItemAsset('barras', 'wooden_skewer'),
+  CookingRecipe() => MedievalAssets.gatheringItemAsset(
+    'comidas',
+    recipe.output.resourceId,
+  ),
+  _ => null,
 };
 
 IconData _gatheringIcon(GatheringDiscipline discipline) => switch (discipline) {
