@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
 import 'package:realm_idle_game/core/theme/medieval_assets.dart';
+import 'package:realm_idle_game/features/content/data/combat_drop_catalog.dart';
 import 'package:realm_idle_game/features/content/data/potion_catalog.dart';
 import 'package:realm_idle_game/features/content/data/spell_catalog.dart';
 import 'package:realm_idle_game/features/content/models/active_buffs.dart';
@@ -585,6 +586,79 @@ void main() {
       find.descendant(
         of: find.byKey(ValueKey<String>('material-${cooking.foodId}')),
         matching: find.byWidgetPredicate(matchesFoodArt),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('combat drops render their spoils art in Materials tab', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final drop = CombatDropCatalog.byId('tarnished_fang')!;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        home: Scaffold(
+          body: ItemsScreen(
+            gameState: GameState(),
+            equipment: EquipmentState(),
+            contentInventory: ContentInventory(),
+            equipmentDefinitions: const [],
+            potions: const [],
+            spells: const [],
+            initialClass: HeroClass.knight,
+            workshopLevels: const {
+              EquipmentWorkshop.blacksmith: 1,
+              EquipmentWorkshop.veilGuild: 1,
+              EquipmentWorkshop.arcanist: 1,
+              EquipmentWorkshop.artisan: 1,
+            },
+            availableMaterials: {drop.id: 3},
+            availableGold: 0,
+            alchemyLevel: 1,
+            magicLevel: 1,
+            activeBuffs: ActiveBuffs(),
+            activeSpellId: null,
+            activeProductionSession: null,
+            onCancelProduction: () {},
+            onCraftEquipment: (_) {},
+            onEquipItem: (_) {},
+            onBrewPotion: (_) {},
+            onUsePotion: (_) {},
+            onCraftSpell: (_) {},
+            onUseSpell: (_) {},
+            onStartProcessing: (_, _) {},
+            onEatFood: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    final materialsTab = find.byKey(
+      const ValueKey<String>('items-tab-materials'),
+    );
+    await tester.ensureVisible(materialsTab);
+    await tester.tap(materialsTab);
+    await tester.pumpAndSettle();
+
+    bool matchesDropArt(Widget widget) {
+      if (widget is! Image) return false;
+      final image = widget.image;
+      if (image is! AssetImage) return false;
+      return image.assetName == MedievalAssets.combatDropAsset(drop.id);
+    }
+
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey<String>('material-${drop.id}')),
+        matching: find.byWidgetPredicate(matchesDropArt),
       ),
       findsOneWidget,
     );

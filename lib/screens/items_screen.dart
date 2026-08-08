@@ -1670,6 +1670,7 @@ class _OwnedMaterial {
       icon: null,
       sigil: drop.sigil,
       color: _dropRarityColor(drop.rarity),
+      imageAsset: MedievalAssets.combatDropAsset(drop.id),
     );
   }
 
@@ -1729,7 +1730,11 @@ class _MaterialCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (material.sigil != null)
-              _SigilSeal(sigil: material.sigil!, color: material.color)
+              _SigilSeal(
+                sigil: material.sigil!,
+                color: material.color,
+                imageAsset: material.imageAsset,
+              )
             else
               _ItemSeal(
                 icon: material.icon ?? Icons.category_outlined,
