@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
 import 'package:realm_idle_game/core/theme/medieval_assets.dart';
 import 'package:realm_idle_game/features/content/data/potion_catalog.dart';
+import 'package:realm_idle_game/features/content/data/spell_catalog.dart';
 import 'package:realm_idle_game/features/content/models/active_buffs.dart';
 import 'package:realm_idle_game/features/content/models/alchemy.dart';
 import 'package:realm_idle_game/features/content/models/content_cost.dart';
@@ -583,6 +584,85 @@ void main() {
       find.descendant(
         of: find.byKey(ValueKey<String>('material-${cooking.foodId}')),
         matching: find.byWidgetPredicate(matchesFoodArt),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('inscribed spells render their sigil art when it exists', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final spell = SpellCatalog.byId('runic_ember')!;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        home: Scaffold(
+          body: ItemsScreen(
+            gameState: GameState(),
+            equipment: EquipmentState(),
+            contentInventory: ContentInventory(spells: {spell.id: 1}),
+            equipmentDefinitions: const [],
+            potions: const [],
+            spells: [spell],
+            initialClass: HeroClass.knight,
+            workshopLevels: const {
+              EquipmentWorkshop.blacksmith: 1,
+              EquipmentWorkshop.veilGuild: 1,
+              EquipmentWorkshop.arcanist: 1,
+              EquipmentWorkshop.artisan: 1,
+            },
+            availableMaterials: const {},
+            availableGold: 0,
+            alchemyLevel: 1,
+            magicLevel: spell.requiredLevel,
+            activeBuffs: ActiveBuffs(),
+            activeSpellId: spell.id,
+            activeProductionSession: null,
+            onCancelProduction: () {},
+            onCraftEquipment: (_) {},
+            onEquipItem: (_) {},
+            onBrewPotion: (_) {},
+            onUsePotion: (_) {},
+            onCraftSpell: (_) {},
+            onUseSpell: (_) {},
+            onStartProcessing: (_, _) {},
+            onEatFood: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    bool matchesSpellArt(Widget widget) {
+      if (widget is! Image) return false;
+      final image = widget.image;
+      if (image is! AssetImage) return false;
+      return image.assetName == MedievalAssets.spellAsset(spell.id);
+    }
+
+    final grimoireTab = find.byKey(
+      const ValueKey<String>('items-tab-grimoire'),
+    );
+    await tester.ensureVisible(grimoireTab);
+    await tester.tap(grimoireTab);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey<String>('items-active-spell')),
+        matching: find.byWidgetPredicate(matchesSpellArt),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey<String>('spell-${spell.id}')),
+        matching: find.byWidgetPredicate(matchesSpellArt),
       ),
       findsOneWidget,
     );

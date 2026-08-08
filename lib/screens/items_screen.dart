@@ -1252,6 +1252,7 @@ class _GrimoireTab extends StatelessWidget {
                 return _ContentCard(
                   key: ValueKey<String>('spell-${spell.id}'),
                   sigil: spell.sigil,
+                  imageAsset: MedievalAssets.spellAsset(spell.id),
                   title: spell.name,
                   subtitle: spell.description,
                   detail:
@@ -1456,6 +1457,9 @@ class _ActiveSpellPanel extends StatelessWidget {
                 color: linked == null
                     ? AppTheme.textSecondary
                     : AppTheme.accentYellow,
+                imageAsset: linked == null
+                    ? null
+                    : MedievalAssets.spellAsset(linked.id),
               ),
               const SizedBox(width: 10),
               Expanded(

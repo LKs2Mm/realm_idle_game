@@ -46,6 +46,9 @@ abstract final class MedievalAssets {
 
   static String potionAsset(String potionId) =>
       'assets/images/medieval/gathering/pocoes/$potionId.png';
+
+  static String spellAsset(String spellId) =>
+      'assets/images/medieval/gathering/magias/$spellId.png';
 }
 
 class MedievalEmblem extends StatelessWidget {
