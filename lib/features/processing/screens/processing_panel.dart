@@ -128,6 +128,8 @@ class _HealthHeader extends StatelessWidget {
                       children: [
                         Text(
                           'FOGO, FERRO E PROVISÕES',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: AppTheme.combatRed,
@@ -139,6 +141,8 @@ class _HealthHeader extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           'Processamento do refúgio',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
@@ -223,6 +227,8 @@ class _ProcessingControls extends StatelessWidget {
             Expanded(
               child: Text(
                 'TAMANHO DO LOTE',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppTheme.textSecondary,
                   fontSize: 9,

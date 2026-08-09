@@ -108,14 +108,18 @@ class _GatheringResourceTile extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              resource.rarity.label,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: rarityColor,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                            Flexible(
+                              child: Text(
+                                resource.rarity.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: rarityColor,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
                             ),
                           ],
                         ),
@@ -187,9 +191,15 @@ class _ResourceMeta extends StatelessWidget {
       children: [
         Icon(icon, size: 12, color: AppTheme.textSecondary),
         const SizedBox(width: 3),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 9),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontSize: 9),
+          ),
         ),
       ],
     );

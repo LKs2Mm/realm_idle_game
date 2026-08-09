@@ -107,8 +107,20 @@ void main() {
       find.byKey(ValueKey<String>('processing-card-${cooking.id}')),
       findsOneWidget,
     );
-    expect(find.text('+${cooking.healAmount} HP cada'), findsOneWidget);
-    expect(find.text('Produz ×5'), findsOneWidget);
+    final cookingCard = find.byKey(
+      ValueKey<String>('processing-card-${cooking.id}'),
+    );
+    expect(
+      find.descendant(
+        of: cookingCard,
+        matching: find.text('+${cooking.healAmount} HP cada'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: cookingCard, matching: find.text('Produz ×5')),
+      findsOneWidget,
+    );
     final eat = find.byKey(
       ValueKey<String>('processing-eat-${cooking.foodId}'),
     );
@@ -316,7 +328,13 @@ void main() {
     );
     await tester.ensureVisible(eat);
     expect(tester.widget<OutlinedButton>(eat).onPressed, isNull);
-    expect(find.text('Nenhuma porção pronta'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey<String>('processing-card-${recipe.id}')),
+        matching: find.text('Nenhuma porção pronta'),
+      ),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 }
