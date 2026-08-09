@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/app/realm_idle_app.dart';
 import 'package:realm_idle_game/models/game_state.dart';
@@ -211,6 +212,166 @@ void main() {
 
     expect(find.byKey(const ValueKey<String>('onboarding-overlay')), findsNothing);
     expect(find.text('HABILIDADES'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'exportar o save copia o JSON completo pra área de transferência',
+    (tester) async {
+      tester.view.physicalSize = const Size(430, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      String? clipboardText;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (methodCall) async {
+          if (methodCall.method == 'Clipboard.setData') {
+            clipboardText =
+                (methodCall.arguments as Map)['text'] as String?;
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+
+      SharedPreferences.setMockInitialValues({});
+      await StorageService.initialize();
+      await tester.pumpWidget(const RealmIdleApp());
+      await tester.pumpAndSettle();
+      await _skipOnboarding(tester);
+
+      await _openDestination(tester, 'Conta');
+      final exportButton = find.byKey(
+        const ValueKey<String>('account-export-save'),
+      );
+      await tester.ensureVisible(exportButton);
+      await tester.tap(exportButton);
+      await tester.pumpAndSettle();
+
+      expect(clipboardText, isNotNull);
+      final decoded = jsonDecode(clipboardText!) as Map<String, dynamic>;
+      expect(decoded['schemaVersion'], isNotNull);
+      expect(decoded['gold'], 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'resetar progresso (com confirmação) restaura um save novo',
+    (tester) async {
+      tester.view.physicalSize = const Size(430, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final richSave = GameState()..gold = 500;
+      SharedPreferences.setMockInitialValues({
+        'game_state': jsonEncode(richSave.toJson()),
+      });
+      await StorageService.initialize();
+      await tester.pumpWidget(const RealmIdleApp());
+      await tester.pumpAndSettle();
+      await _skipOnboarding(tester);
+
+      expect(find.text('500'), findsOneWidget);
+
+      await _openDestination(tester, 'Conta');
+      final resetButton = find.byKey(
+        const ValueKey<String>('account-reset-progress'),
+      );
+      await tester.ensureVisible(resetButton);
+      await tester.tap(resetButton);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('account-reset-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('500'), findsNothing);
+      expect(find.text('0'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('importar um save válido substitui o progresso atual', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    SharedPreferences.setMockInitialValues({});
+    await StorageService.initialize();
+    await tester.pumpWidget(const RealmIdleApp());
+    await tester.pumpAndSettle();
+    await _skipOnboarding(tester);
+
+    await _openDestination(tester, 'Conta');
+    final importButton = find.byKey(
+      const ValueKey<String>('account-import-save'),
+    );
+    await tester.ensureVisible(importButton);
+    await tester.tap(importButton);
+    await tester.pumpAndSettle();
+
+    final importedSave = GameState()..gold = 750;
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('account-import-field')),
+      jsonEncode(importedSave.toJson()),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('account-import-confirm')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('750'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('importar texto inválido mostra erro e não altera o save', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    SharedPreferences.setMockInitialValues({});
+    await StorageService.initialize();
+    await tester.pumpWidget(const RealmIdleApp());
+    await tester.pumpAndSettle();
+    await _skipOnboarding(tester);
+
+    await _openDestination(tester, 'Conta');
+    final importButton = find.byKey(
+      const ValueKey<String>('account-import-save'),
+    );
+    await tester.ensureVisible(importButton);
+    await tester.tap(importButton);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('account-import-field')),
+      'isso não é json',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('account-import-confirm')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Save inválido. Confira se colou o texto completo.'),
+      findsOneWidget,
+    );
+    expect(find.text('0'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 }

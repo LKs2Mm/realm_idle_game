@@ -60,6 +60,9 @@ void main() {
             onSfxVolumeChanged: (_) {},
             onAudioMutedChanged: (_) {},
             onNotificationsEnabledChanged: (_) {},
+            onExportSave: () {},
+            onImportSave: (_) {},
+            onResetProgress: () {},
           ),
         ),
       ),
@@ -138,6 +141,9 @@ void main() {
               onSfxVolumeChanged: (_) {},
               onAudioMutedChanged: (_) {},
               onNotificationsEnabledChanged: (_) {},
+              onExportSave: () {},
+              onImportSave: (_) {},
+              onResetProgress: () {},
             ),
           ),
         ),
@@ -210,6 +216,9 @@ void main() {
             onSfxVolumeChanged: (_) {},
             onAudioMutedChanged: (_) {},
             onNotificationsEnabledChanged: (_) {},
+            onExportSave: () {},
+            onImportSave: (_) {},
+            onResetProgress: () {},
           ),
         ),
       ),
@@ -263,6 +272,9 @@ void main() {
           onSfxVolumeChanged: (_) {},
           onAudioMutedChanged: (_) {},
           onNotificationsEnabledChanged: (_) {},
+          onExportSave: () {},
+          onImportSave: (_) {},
+          onResetProgress: () {},
         ),
       ),
     );
@@ -313,6 +325,9 @@ void main() {
             onAudioMutedChanged: (_) {},
             onNotificationsEnabledChanged: (value) =>
                 notificationsRequest = value,
+            onExportSave: () {},
+            onImportSave: (_) {},
+            onResetProgress: () {},
           ),
         ),
       ),
@@ -362,6 +377,9 @@ void main() {
             onSfxVolumeChanged: (value) => sfxVolumeRequest = value,
             onAudioMutedChanged: (value) => mutedRequest = value,
             onNotificationsEnabledChanged: (_) {},
+            onExportSave: () {},
+            onImportSave: (_) {},
+            onResetProgress: () {},
           ),
         ),
       ),
@@ -415,6 +433,9 @@ void main() {
             onSfxVolumeChanged: (value) => sfxVolumeRequest = value,
             onAudioMutedChanged: (value) => mutedRequest = value,
             onNotificationsEnabledChanged: (_) {},
+            onExportSave: () {},
+            onImportSave: (_) {},
+            onResetProgress: () {},
           ),
         ),
       ),
@@ -479,6 +500,9 @@ void main() {
             onSfxVolumeChanged: (_) {},
             onAudioMutedChanged: (_) {},
             onNotificationsEnabledChanged: (_) {},
+            onExportSave: () {},
+            onImportSave: (_) {},
+            onResetProgress: () {},
           ),
         ),
       ),
@@ -486,4 +510,98 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'backup card exports, imports via dialog, and confirms before resetting',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      var exportRequests = 0;
+      String? importedText;
+      var resetRequests = 0;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.theme,
+          home: Scaffold(
+            body: AccountScreen(
+              characterName: 'Aldren',
+              characterTitle: 'Sem título',
+              saveId: 'realm-7F2A',
+              createdAtLabel: '01/08/2026',
+              lastSavedAtLabel: 'agora',
+              classStats: const [],
+              chronicle: const [],
+              musicVolume: 0.6,
+              sfxVolume: 0.8,
+              audioMuted: false,
+              notificationsEnabled: false,
+              onProfileChanged: (_, _) {},
+              onSaveRequested: () {},
+              onIdentityRequested: () {},
+              onMusicVolumeChanged: (_) {},
+              onSfxVolumeChanged: (_) {},
+              onAudioMutedChanged: (_) {},
+              onNotificationsEnabledChanged: (_) {},
+              onExportSave: () => exportRequests++,
+              onImportSave: (text) => importedText = text,
+              onResetProgress: () => resetRequests++,
+            ),
+          ),
+        ),
+      );
+
+      final exportButton = find.byKey(
+        const ValueKey<String>('account-export-save'),
+      );
+      await tester.ensureVisible(exportButton);
+      await tester.tap(exportButton);
+      expect(exportRequests, 1);
+
+      final importButton = find.byKey(
+        const ValueKey<String>('account-import-save'),
+      );
+      await tester.ensureVisible(importButton);
+      await tester.tap(importButton);
+      await tester.pumpAndSettle();
+
+      final importField = find.byKey(
+        const ValueKey<String>('account-import-field'),
+      );
+      expect(importField, findsOneWidget);
+      await tester.enterText(importField, '{"schemaVersion":7}');
+      await tester.tap(
+        find.byKey(const ValueKey<String>('account-import-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(importedText, '{"schemaVersion":7}');
+      expect(find.byKey(const ValueKey<String>('account-import-field')), findsNothing);
+
+      final resetButton = find.byKey(
+        const ValueKey<String>('account-reset-progress'),
+      );
+      await tester.ensureVisible(resetButton);
+      await tester.tap(resetButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reiniciar progresso'), findsWidgets);
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(resetRequests, 0);
+
+      await tester.tap(resetButton);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('account-reset-confirm')),
+      );
+      await tester.pumpAndSettle();
+      expect(resetRequests, 1);
+
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

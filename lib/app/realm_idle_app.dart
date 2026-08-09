@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -319,6 +320,49 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
     if (mounted) _showMessage('Identidade copiada.');
   }
 
+  Future<void> _exportSave() async {
+    final json = jsonEncode(_gameState.toJson());
+    await Clipboard.setData(ClipboardData(text: json));
+    if (mounted) {
+      _showMessage('Save copiado. Guarde em um local seguro.');
+    }
+  }
+
+  Future<void> _importSave(String rawJson) async {
+    final GameState imported;
+    try {
+      final decoded = jsonDecode(rawJson);
+      if (decoded is! Map<String, dynamic>) throw const FormatException();
+      imported = GameState.fromJson(decoded);
+    } catch (_) {
+      _showMessage('Save inválido. Confira se colou o texto completo.');
+      return;
+    }
+
+    await _replaceGameState(imported);
+    _showMessage('Save importado com sucesso.');
+  }
+
+  Future<void> _resetProgress() async {
+    await _replaceGameState(GameState());
+    _showMessage('Progresso reiniciado.');
+  }
+
+  Future<void> _replaceGameState(GameState newState) async {
+    _gatheringService.initialize(newState);
+    _combatService.initialize(newState);
+    _productionService.initialize(newState);
+    if (!mounted) return;
+    setState(() {
+      _gameState = newState;
+      _selectedGatheringDiscipline = GatheringDiscipline.mining;
+      _selectedToolDiscipline = GatheringDiscipline.mining;
+      _selectedItemsTabIndex = 0;
+    });
+    await StorageService.saveGameState(newState);
+    if (mounted) setState(() => _lastSavedAt = DateTime.now());
+  }
+
   void _showMessage(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -633,6 +677,9 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
           onSfxVolumeChanged: _setSfxVolume,
           onAudioMutedChanged: _setAudioMuted,
           onNotificationsEnabledChanged: _setNotificationsEnabled,
+          onExportSave: _exportSave,
+          onImportSave: _importSave,
+          onResetProgress: _resetProgress,
         );
       default:
         return SkillsScreen(gameState: _gameState, onOpenSkill: _openSkill);

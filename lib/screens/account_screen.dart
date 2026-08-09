@@ -53,6 +53,9 @@ class AccountScreen extends StatefulWidget {
   final ValueChanged<double> onSfxVolumeChanged;
   final ValueChanged<bool> onAudioMutedChanged;
   final ValueChanged<bool> onNotificationsEnabledChanged;
+  final VoidCallback onExportSave;
+  final ValueChanged<String> onImportSave;
+  final VoidCallback onResetProgress;
 
   const AccountScreen({
     super.key,
@@ -74,6 +77,9 @@ class AccountScreen extends StatefulWidget {
     required this.onSfxVolumeChanged,
     required this.onAudioMutedChanged,
     required this.onNotificationsEnabledChanged,
+    required this.onExportSave,
+    required this.onImportSave,
+    required this.onResetProgress,
   });
 
   @override
@@ -208,6 +214,18 @@ class _AccountScreenState extends State<AccountScreen> {
             lastSavedAtLabel: widget.lastSavedAtLabel,
             onSave: widget.onSaveRequested,
             onIdentity: widget.onIdentityRequested,
+          ),
+          const SizedBox(height: 20),
+          const _SectionTitle(
+            icon: Icons.shield_moon_outlined,
+            title: 'BACKUP DO SAVE',
+            detail: 'Só existe neste aparelho',
+          ),
+          const SizedBox(height: 9),
+          _BackupCard(
+            onExport: widget.onExportSave,
+            onImport: widget.onImportSave,
+            onReset: widget.onResetProgress,
           ),
         ],
       ),
@@ -657,6 +675,175 @@ class _NotificationSettingsCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BackupCard extends StatelessWidget {
+  final VoidCallback onExport;
+  final ValueChanged<String> onImport;
+  final VoidCallback onReset;
+
+  const _BackupCard({
+    required this.onExport,
+    required this.onImport,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: RunicFrame(
+        color: AppTheme.combatBlue,
+        opacity: 0.45,
+        child: Padding(
+          padding: const EdgeInsets.all(13),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'O progresso é salvo só neste aparelho. Exporte de vez em '
+                'quando pra ter uma cópia de segurança.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 11),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    key: const ValueKey<String>('account-export-save'),
+                    onPressed: onExport,
+                    icon: const Icon(Icons.upload_outlined, size: 17),
+                    label: const Text('Exportar'),
+                  ),
+                  OutlinedButton.icon(
+                    key: const ValueKey<String>('account-import-save'),
+                    onPressed: () => showDialog<void>(
+                      context: context,
+                      builder: (_) => _ImportSaveDialog(onImport: onImport),
+                    ),
+                    icon: const Icon(Icons.download_outlined, size: 17),
+                    label: const Text('Importar'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 11),
+              const Divider(height: 1, color: AppTheme.darkCardBorder),
+              const SizedBox(height: 11),
+              OutlinedButton.icon(
+                key: const ValueKey<String>('account-reset-progress'),
+                onPressed: () => _confirmReset(context, onReset),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.combatRed,
+                  side: const BorderSide(color: AppTheme.combatRed),
+                ),
+                icon: const Icon(Icons.restart_alt_rounded, size: 17),
+                label: const Text('Reiniciar progresso'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _confirmReset(BuildContext context, VoidCallback onReset) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Reiniciar progresso'),
+      content: const Text(
+        'Isso apaga todo o progresso deste reino neste aparelho, pra '
+        'sempre. Exporte um backup antes se quiser guardar uma cópia. '
+        'Essa ação não pode ser desfeita.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          key: const ValueKey<String>('account-reset-confirm'),
+          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.combatRed),
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Apagar tudo'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed ?? false) onReset();
+}
+
+class _ImportSaveDialog extends StatefulWidget {
+  final ValueChanged<String> onImport;
+
+  const _ImportSaveDialog({required this.onImport});
+
+  @override
+  State<_ImportSaveDialog> createState() => _ImportSaveDialogState();
+}
+
+class _ImportSaveDialogState extends State<_ImportSaveDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Importar save'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Cole abaixo o texto exportado de outro dispositivo (ou '
+              'deste mesmo, salvo antes). Isso substitui todo o progresso '
+              'salvo aqui.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const ValueKey<String>('account-import-field'),
+              controller: _controller,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Cole aqui o save exportado',
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          key: const ValueKey<String>('account-import-confirm'),
+          onPressed: () {
+            final text = _controller.text.trim();
+            if (text.isEmpty) return;
+            Navigator.of(context).pop();
+            widget.onImport(text);
+          },
+          child: const Text('Importar'),
+        ),
+      ],
     );
   }
 }
