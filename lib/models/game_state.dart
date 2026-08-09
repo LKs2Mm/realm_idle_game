@@ -22,6 +22,7 @@ import 'package:realm_idle_game/features/profile/models/player_profile.dart';
 import 'package:realm_idle_game/features/tools/data/tool_catalog.dart';
 import 'package:realm_idle_game/features/tools/models/tool_models.dart';
 import 'package:realm_idle_game/models/audio_settings.dart';
+import 'package:realm_idle_game/models/auto_eat_settings.dart';
 import 'package:realm_idle_game/models/notification_settings.dart';
 import 'package:realm_idle_game/models/skill.dart';
 
@@ -60,6 +61,7 @@ class GameState {
   late PlayerProfile profile;
   AudioSettings audioSettings = AudioSettings();
   NotificationSettings notificationSettings = NotificationSettings();
+  AutoEatSettings autoEatSettings = AutoEatSettings();
   bool hasSeenOnboarding = false;
   HeroClass activeHeroClass = HeroClass.knight;
   String? activeSpellId;
@@ -900,6 +902,17 @@ class GameState {
     return FoodUseResult.success;
   }
 
+  /// A refeição de maior cura entre as que o jogador possui em estoque, ou
+  /// `null` se não houver nenhuma — usada pelo consumo automático em combate.
+  String? get bestOwnedFoodId {
+    CookingRecipe? best;
+    for (final recipe in CookingRecipeCatalog.all) {
+      if (contentInventory.quantityOfConsumable(recipe.foodId) <= 0) continue;
+      if (best == null || recipe.healAmount > best.healAmount) best = recipe;
+    }
+    return best?.foodId;
+  }
+
   int pruneExpiredBuffs({DateTime? at}) {
     return activeBuffs.pruneExpired(at ?? DateTime.now());
   }
@@ -927,6 +940,17 @@ class GameState {
 
   void setNotificationsEnabled(bool enabled) {
     notificationSettings.enabled = enabled;
+  }
+
+  void setAutoEatEnabled(bool enabled) {
+    autoEatSettings.enabled = enabled;
+  }
+
+  void setAutoEatThreshold(int percent) {
+    autoEatSettings.thresholdPercent = percent.clamp(
+      AutoEatSettings.minThresholdPercent,
+      AutoEatSettings.maxThresholdPercent,
+    );
   }
 
   String get saveIdentity {
@@ -964,6 +988,7 @@ class GameState {
     'combatDropRemainders': combatDropRemainders,
     'audioSettings': audioSettings.toJson(),
     'notificationSettings': notificationSettings.toJson(),
+    'autoEatSettings': autoEatSettings.toJson(),
     'hasSeenOnboarding': hasSeenOnboarding,
   };
 
@@ -1040,6 +1065,7 @@ class GameState {
     state.notificationSettings = NotificationSettings.fromJson(
       json['notificationSettings'],
     );
+    state.autoEatSettings = AutoEatSettings.fromJson(json['autoEatSettings']);
     // Saves gravados antes do onboarding existir não têm essa chave — trata
     // como "já viu" pra não reexibir o tutorial pra quem já está em progresso.
     state.hasSeenOnboarding = json.containsKey('hasSeenOnboarding')

@@ -329,6 +329,62 @@ void main() {
     expect(find.text('37/100 HP'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('auto-eat toggle and threshold slider update the game state', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final state = GameState();
+    state.contentInventory.addConsumable('roasted_shrimp', 2);
+    final service = CombatService(
+      onUpdate: (_, _) {},
+      now: () => DateTime(2026, 8, 1, 12),
+      enableTimer: false,
+    );
+    service.initialize(state);
+    addTearDown(service.dispose);
+    var stateChangedCalls = 0;
+
+    await tester.pumpWidget(
+      _combatApp(
+        state: state,
+        service: service,
+        onStateChanged: () => stateChangedCalls++,
+      ),
+    );
+
+    expect(find.text('Vai usar: Camarão assado'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('combat-auto-eat-threshold')),
+      findsNothing,
+    );
+
+    final toggle = find.byKey(
+      const ValueKey<String>('combat-auto-eat-enabled'),
+    );
+    await tester.ensureVisible(toggle);
+    await tester.tap(toggle);
+    await tester.pump();
+
+    expect(state.autoEatSettings.enabled, isTrue);
+    expect(stateChangedCalls, 1);
+    final slider = find.byKey(
+      const ValueKey<String>('combat-auto-eat-threshold'),
+    );
+    expect(slider, findsOneWidget);
+    expect(state.autoEatSettings.thresholdPercent, 50);
+
+    await tester.drag(slider, const Offset(-200, 0));
+    await tester.pump();
+
+    expect(state.autoEatSettings.thresholdPercent, lessThan(50));
+    expect(stateChangedCalls, greaterThan(1));
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _combatApp({

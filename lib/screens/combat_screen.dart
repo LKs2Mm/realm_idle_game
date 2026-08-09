@@ -8,6 +8,8 @@ import 'package:realm_idle_game/features/combat/models/combat_encounter.dart';
 import 'package:realm_idle_game/features/combat/models/combat_session.dart';
 import 'package:realm_idle_game/features/combat/services/combat_service.dart';
 import 'package:realm_idle_game/features/equipment/models/equipment_models.dart';
+import 'package:realm_idle_game/features/processing/data/cooking_recipe_catalog.dart';
+import 'package:realm_idle_game/models/auto_eat_settings.dart';
 import 'package:realm_idle_game/models/game_state.dart';
 
 class CombatScreen extends StatefulWidget {
@@ -50,6 +52,18 @@ class _CombatScreenState extends State<CombatScreen> {
     if (mounted) setState(() {});
   }
 
+  void _setAutoEatEnabled(bool enabled) {
+    widget.gameState.setAutoEatEnabled(enabled);
+    widget.onStateChanged();
+    if (mounted) setState(() {});
+  }
+
+  void _setAutoEatThreshold(int percent) {
+    widget.gameState.setAutoEatThreshold(percent);
+    widget.onStateChanged();
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -76,6 +90,12 @@ class _CombatScreenState extends State<CombatScreen> {
           ],
           const SizedBox(height: 14),
           _CombatActivityCard(gameState: widget.gameState, onStop: _stopCombat),
+          const SizedBox(height: 14),
+          _AutoEatCard(
+            gameState: widget.gameState,
+            onEnabledChanged: _setAutoEatEnabled,
+            onThresholdChanged: _setAutoEatThreshold,
+          ),
           const SizedBox(height: 20),
           const _CombatNotice(),
           const SizedBox(height: 20),
@@ -896,6 +916,100 @@ class _CombatActivityCard extends StatelessWidget {
                   ),
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AutoEatCard extends StatelessWidget {
+  final GameState gameState;
+  final ValueChanged<bool> onEnabledChanged;
+  final ValueChanged<int> onThresholdChanged;
+
+  const _AutoEatCard({
+    required this.gameState,
+    required this.onEnabledChanged,
+    required this.onThresholdChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = gameState.autoEatSettings;
+    final bestFoodId = gameState.bestOwnedFoodId;
+    final bestFoodName = bestFoodId == null
+        ? null
+        : CookingRecipeCatalog.byFoodId(bestFoodId)?.name;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: RunicFrame(
+        color: AppTheme.miningGreenLight,
+        opacity: 0.42,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SwitchListTile(
+                key: const ValueKey<String>('combat-auto-eat-enabled'),
+                contentPadding: EdgeInsets.zero,
+                value: settings.enabled,
+                onChanged: onEnabledChanged,
+                title: const Text('Comer automaticamente'),
+                subtitle: Text(
+                  bestFoodName == null
+                      ? 'Sem refeições no inventário ainda.'
+                      : 'Vai usar: $bestFoodName',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                secondary: const Icon(
+                  Icons.restaurant_outlined,
+                  color: AppTheme.miningGreenLight,
+                ),
+              ),
+              if (settings.enabled)
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.favorite_border,
+                      size: 16,
+                      color: AppTheme.textSecondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Semantics(
+                        label: 'Limiar de vida pra comer automaticamente',
+                        value: '${settings.thresholdPercent}%',
+                        child: Slider(
+                          key: const ValueKey<String>(
+                            'combat-auto-eat-threshold',
+                          ),
+                          value: settings.thresholdPercent.toDouble(),
+                          min: AutoEatSettings.minThresholdPercent.toDouble(),
+                          max: AutoEatSettings.maxThresholdPercent.toDouble(),
+                          divisions:
+                              (AutoEatSettings.maxThresholdPercent -
+                                  AutoEatSettings.minThresholdPercent) ~/
+                              5,
+                          onChanged: (value) =>
+                              onThresholdChanged(value.round()),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 36,
+                      child: Text(
+                        '${settings.thresholdPercent}%',
+                        textAlign: TextAlign.end,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),

@@ -191,6 +191,66 @@ void main() {
     },
   );
 
+  test(
+    'auto-eat heals the hero mid-combat when HP drops below the threshold',
+    () {
+      state.currentHealth = 20;
+      state.contentInventory.addConsumable('roasted_shrimp', 3);
+      state.setAutoEatEnabled(true);
+      state.setAutoEatThreshold(50);
+      service.selectEncounter('grave_rat');
+
+      currentTime = currentTime.add(const Duration(milliseconds: 4000));
+      service.advanceTo(currentTime);
+
+      // 20 HP - 1 damage = 19 (19% < 50% threshold) -> auto-eats a
+      // roasted_shrimp (+8 HP) -> 27.
+      expect(state.currentHealth, 27);
+      expect(
+        state.contentInventory.quantityOfConsumable('roasted_shrimp'),
+        2,
+      );
+    },
+  );
+
+  test('auto-eat does nothing while disabled', () {
+    state.currentHealth = 20;
+    state.contentInventory.addConsumable('roasted_shrimp', 3);
+    service.selectEncounter('grave_rat');
+
+    currentTime = currentTime.add(const Duration(milliseconds: 4000));
+    service.advanceTo(currentTime);
+
+    expect(state.currentHealth, 19);
+    expect(state.contentInventory.quantityOfConsumable('roasted_shrimp'), 3);
+  });
+
+  test('auto-eat does nothing once HP is already above the threshold', () {
+    state.currentHealth = 90;
+    state.contentInventory.addConsumable('roasted_shrimp', 3);
+    state.setAutoEatEnabled(true);
+    state.setAutoEatThreshold(50);
+    service.selectEncounter('grave_rat');
+
+    currentTime = currentTime.add(const Duration(milliseconds: 4000));
+    service.advanceTo(currentTime);
+
+    expect(state.currentHealth, 89);
+    expect(state.contentInventory.quantityOfConsumable('roasted_shrimp'), 3);
+  });
+
+  test('auto-eat does nothing when no food is owned', () {
+    state.currentHealth = 20;
+    state.setAutoEatEnabled(true);
+    state.setAutoEatThreshold(50);
+    service.selectEncounter('grave_rat');
+
+    currentTime = currentTime.add(const Duration(milliseconds: 4000));
+    service.advanceTo(currentTime);
+
+    expect(state.currentHealth, 19);
+  });
+
   test('advance result aggregates damage even when no victory is returned', () {
     final result = CombatAdvanceResult();
 

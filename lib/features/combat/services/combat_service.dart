@@ -158,6 +158,7 @@ class CombatService {
       at: timestamp,
     );
     result.addReward(firstReward);
+    _maybeAutoEat();
 
     // A rejected cycle or a fatal victory must never be converted into more
     // offline victories. GameState is authoritative about the real result.
@@ -182,6 +183,7 @@ class CombatService {
         at: timestamp,
       );
       result.addReward(additionalReward);
+      _maybeAutoEat();
 
       final actualAdditionalVictories = additionalReward?.victories ?? 0;
       final batchWasInterrupted =
@@ -206,6 +208,20 @@ class CombatService {
 
     if (notify) onUpdate(gameState, true);
     return result;
+  }
+
+  void _maybeAutoEat() {
+    final settings = gameState.autoEatSettings;
+    if (!settings.enabled || gameState.isDefeated) return;
+
+    final maxHealth = gameState.maxHealth;
+    if (maxHealth <= 0) return;
+    final healthPercent = gameState.currentHealth * 100 ~/ maxHealth;
+    if (healthPercent >= settings.thresholdPercent) return;
+
+    final foodId = gameState.bestOwnedFoodId;
+    if (foodId == null) return;
+    gameState.consumeCookedFish(foodId);
   }
 
   void _endSession(CombatAdvanceResult result) {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/features/combat/models/combat_encounter.dart';
 import 'package:realm_idle_game/features/gathering/models/gathering_resource.dart';
+import 'package:realm_idle_game/features/processing/data/cooking_recipe_catalog.dart';
 import 'package:realm_idle_game/features/tools/data/tool_catalog.dart';
 import 'package:realm_idle_game/features/tools/models/tool_models.dart';
 import 'package:realm_idle_game/models/audio_settings.dart';
@@ -446,6 +447,49 @@ void main() {
       );
 
       expect(restored.notificationSettings.enabled, isTrue);
+    });
+
+    test('defaults auto-eat to disabled for saves predating it', () {
+      final state = GameState.fromJson({'gold': 10});
+
+      expect(state.autoEatSettings.enabled, isFalse);
+    });
+
+    test('round-trips the auto-eat preference', () {
+      final state = GameState()
+        ..setAutoEatEnabled(true)
+        ..setAutoEatThreshold(25);
+
+      final restored = GameState.fromJson(
+        Map<String, dynamic>.from(
+          jsonDecode(jsonEncode(state.toJson())) as Map,
+        ),
+      );
+
+      expect(restored.autoEatSettings.enabled, isTrue);
+      expect(restored.autoEatSettings.thresholdPercent, 25);
+    });
+  });
+
+  group('Auto-eat food selection', () {
+    test('bestOwnedFoodId is null when no food is owned', () {
+      final state = GameState();
+
+      expect(state.bestOwnedFoodId, isNull);
+    });
+
+    test('bestOwnedFoodId picks the highest-healAmount owned food', () {
+      final state = GameState();
+      final weakest = CookingRecipeCatalog.all.reduce(
+        (a, b) => a.healAmount <= b.healAmount ? a : b,
+      );
+      final strongest = CookingRecipeCatalog.all.reduce(
+        (a, b) => a.healAmount >= b.healAmount ? a : b,
+      );
+      state.contentInventory.addConsumable(weakest.foodId, 1);
+      state.contentInventory.addConsumable(strongest.foodId, 1);
+
+      expect(state.bestOwnedFoodId, strongest.foodId);
     });
   });
 
