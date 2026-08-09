@@ -50,8 +50,8 @@ class _GatheringScreenState extends State<GatheringScreen> {
         ? null
         : GatheringResource.byId(session.resourceId);
     _selectedDiscipline =
-        activeResource?.discipline ??
         widget.initialDiscipline ??
+        activeResource?.discipline ??
         GatheringDiscipline.mining;
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/core/theme/runic_ornaments.dart';
+import 'package:realm_idle_game/features/gathering/models/gathering_resource.dart';
 import 'package:realm_idle_game/features/gathering/screens/gathering_screen.dart';
 import 'package:realm_idle_game/features/gathering/services/gathering_service.dart';
 import 'package:realm_idle_game/models/game_state.dart';
@@ -50,6 +51,49 @@ void main() {
     expect(find.text('ATIVO'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'explicit initialDiscipline wins over an already-active session',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final state = GameState();
+      final service = GatheringService(
+        onUpdate: (_, _) {},
+        enableTimer: false,
+      );
+      service.initialize(state);
+      service.selectResource('copper');
+      addTearDown(service.dispose);
+
+      // Player is actively mining, but navigates straight to Pesca (e.g. by
+      // tapping the Pesca skill card) — the destination they picked must
+      // win, not the discipline of the session already running.
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GatheringScreen(
+              gameState: state,
+              service: service,
+              offlineReport: null,
+              onDismissOfflineReport: () {},
+              initialDiscipline: GatheringDiscipline.fishing,
+            ),
+          ),
+        ),
+      );
+
+      // The resource list must show Pesca's resources (Camarão), not the
+      // Mineração ones — "Minério de cobre" is still expected twice, but
+      // only from the always-on active-activity banner (title + "Próximo
+      // ciclo"), not from a Mineração resource list.
+      expect(find.text('Camarão'), findsOneWidget);
+      expect(find.text('Minério de cobre'), findsNWidgets(2));
+    },
+  );
 
   testWidgets('cycle progress stays continuous across one-second updates', (
     tester,
