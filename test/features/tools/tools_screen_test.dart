@@ -50,7 +50,7 @@ void main() {
     for (final tool in ToolCatalog.forDiscipline(GatheringDiscipline.mining)) {
       expect(find.byKey(ValueKey('tool-card-${tool.id}')), findsOneWidget);
     }
-    expect(find.text('Requer Nível 20'), findsOneWidget);
+    expect(find.text('Requer Nível 5'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.tap(
@@ -85,9 +85,9 @@ void main() {
   ) async {
     useNarrowViewport(tester);
     final state = GameState();
-    state.skills['mining']!.level = 20;
-    state.addGold(630);
-    state.gatheringInventory.add('iron_bar', 72);
+    state.skills['mining']!.level = 5;
+    state.addGold(35);
+    state.gatheringInventory.add('iron_bar', 15);
     final experienceBefore = state.skills['mining']!.experience;
     var changedCount = 0;
 
@@ -100,8 +100,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(state.ownedTool('pickaxe:iron'), isNotNull);
-    expect(state.gatheringInventory.quantityOf('iron_bar'), 12);
-    expect(state.gold, 30);
+    expect(state.gatheringInventory.quantityOf('iron_bar'), 5);
+    expect(state.gold, 15);
     expect(changedCount, 1);
     expect(find.textContaining('foi fabricada.'), findsOneWidget);
     expect(state.skills['mining']!.experience, experienceBefore);

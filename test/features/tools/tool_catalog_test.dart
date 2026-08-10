@@ -20,8 +20,8 @@ void main() {
           expect(tools.map((tool) => tool.tier), [0, 1, 2, 3, 4, 5]);
           expect(tools.map((tool) => tool.requiredSkillLevel), [
             1,
-            20,
-            40,
+            5,
+            15,
             60,
             80,
             100,
@@ -29,16 +29,16 @@ void main() {
           expect(tools.every((tool) => tool.maxUpgradeLevel == 5), isTrue);
           expect(tools.map((tool) => tool.purchaseCost.gold), [
             0,
-            600,
-            3000,
+            20,
+            150,
             12000,
             40000,
             120000,
           ]);
           expect(tools.map((tool) => tool.upgradeGoldBase), [
             10,
-            30,
-            150,
+            15,
+            40,
             600,
             2000,
             6000,
@@ -88,10 +88,10 @@ void main() {
       expect(tool.yieldForUpgrade(0), closeTo(1.05, 1e-9));
       expect(tool.yieldForUpgrade(5), closeTo(1.10, 1e-9));
       expect(tool.yieldForUpgrade(99), closeTo(1.10, 1e-9));
-      expect(tool.upgradeCostFor(0)?.resources, {'iron_bar': 12});
-      expect(tool.upgradeCostFor(0)?.gold, 30);
-      expect(tool.upgradeCostFor(4)?.resources, {'iron_bar': 60});
-      expect(tool.upgradeCostFor(4)?.gold, 150);
+      expect(tool.upgradeCostFor(0)?.resources, {'iron_bar': 5});
+      expect(tool.upgradeCostFor(0)?.gold, 15);
+      expect(tool.upgradeCostFor(4)?.resources, {'iron_bar': 25});
+      expect(tool.upgradeCostFor(4)?.gold, 75);
       expect(tool.upgradeCostFor(5), isNull);
     });
   });

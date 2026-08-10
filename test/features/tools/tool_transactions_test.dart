@@ -25,13 +25,13 @@ void main() {
 
     test('blocks acquisition by skill level without spending resources', () {
       final state = GameState();
-      state.skills['mining']!.level = 19;
-      state.gatheringInventory.add('iron_bar', 60);
+      state.skills['mining']!.level = 4;
+      state.gatheringInventory.add('iron_bar', 10);
 
       final result = state.acquireTool('pickaxe:iron');
 
       expect(result, ToolActionResult.skillLevelRequired);
-      expect(state.gatheringInventory.quantityOf('iron_bar'), 60);
+      expect(state.gatheringInventory.quantityOf('iron_bar'), 10);
       expect(state.ownedTool('pickaxe:iron'), isNull);
       expect(
         state.tools.equippedId(GatheringDiscipline.mining),
@@ -41,41 +41,41 @@ void main() {
 
     test('does not partially spend a multi-resource recipe', () {
       final state = GameState();
-      state.skills['woodcutting']!.level = 20;
-      state.addGold(600);
-      state.gatheringInventory.add('mahogany_log', 60);
-      state.gatheringInventory.add('iron_bar', 29);
+      state.skills['woodcutting']!.level = 5;
+      state.addGold(20);
+      state.gatheringInventory.add('mahogany_log', 10);
+      state.gatheringInventory.add('iron_bar', 4);
       final before = Map<String, int>.from(state.gatheringInventory.resources);
 
       final result = state.acquireTool('axe:iron');
 
       expect(result, ToolActionResult.insufficientResources);
       expect(state.gatheringInventory.resources, before);
-      expect(state.gold, 600);
+      expect(state.gold, 20);
       expect(state.ownedTool('axe:iron'), isNull);
     });
 
     test('missing gold never consumes gathered materials', () {
       final state = GameState();
-      state.skills['mining']!.level = 20;
-      state.gatheringInventory.add('iron_bar', 60);
+      state.skills['mining']!.level = 5;
+      state.gatheringInventory.add('iron_bar', 10);
 
       final result = state.acquireTool('pickaxe:iron');
 
       expect(result, ToolActionResult.insufficientGold);
-      expect(state.gatheringInventory.quantityOf('iron_bar'), 60);
+      expect(state.gatheringInventory.quantityOf('iron_bar'), 10);
       expect(state.gold, 0);
       expect(state.ownedTool('pickaxe:iron'), isNull);
     });
 
     test('acquires, refuses a second purchase, and equips an owned tool', () {
       final state = GameState();
-      state.skills['mining']!.level = 20;
-      state.addGold(600);
-      state.gatheringInventory.add('iron_bar', 120);
+      state.skills['mining']!.level = 5;
+      state.addGold(20);
+      state.gatheringInventory.add('iron_bar', 20);
 
       expect(state.acquireTool('pickaxe:iron'), ToolActionResult.success);
-      expect(state.gatheringInventory.quantityOf('iron_bar'), 60);
+      expect(state.gatheringInventory.quantityOf('iron_bar'), 10);
       expect(state.gold, 0);
       expect(state.ownedTool('pickaxe:iron')?.upgradeLevel, 0);
       expect(
@@ -84,7 +84,7 @@ void main() {
       );
 
       expect(state.acquireTool('pickaxe:iron'), ToolActionResult.alreadyOwned);
-      expect(state.gatheringInventory.quantityOf('iron_bar'), 60);
+      expect(state.gatheringInventory.quantityOf('iron_bar'), 10);
 
       expect(state.equipTool('pickaxe:iron'), ToolActionResult.success);
       expect(
@@ -97,9 +97,9 @@ void main() {
   group('GameState tool upgrades', () {
     test('spends each upgrade atomically and stops at level five', () {
       final state = GameState();
-      state.skills['mining']!.level = 20;
-      state.addGold(600);
-      state.gatheringInventory.add('iron_bar', 60);
+      state.skills['mining']!.level = 5;
+      state.addGold(20);
+      state.gatheringInventory.add('iron_bar', 10);
       expect(state.acquireTool('pickaxe:iron'), ToolActionResult.success);
 
       expect(
@@ -108,16 +108,16 @@ void main() {
       );
       expect(state.ownedTool('pickaxe:iron')?.upgradeLevel, 0);
 
-      state.addGold(30);
+      state.addGold(15);
       expect(
         state.upgradeTool('pickaxe:iron'),
         ToolActionResult.insufficientResources,
       );
-      expect(state.gold, 30);
+      expect(state.gold, 15);
 
-      const upgradeCosts = [12, 24, 36, 48, 60];
+      const upgradeCosts = [5, 10, 15, 20, 25];
       for (var level = 0; level < upgradeCosts.length; level++) {
-        if (level > 0) state.addGold(30 * (level + 1));
+        if (level > 0) state.addGold(15 * (level + 1));
         state.gatheringInventory.add('iron_bar', upgradeCosts[level]);
 
         expect(state.upgradeTool('pickaxe:iron'), ToolActionResult.success);
@@ -126,15 +126,15 @@ void main() {
         expect(state.gold, 0);
       }
 
-      state.addGold(150);
-      state.gatheringInventory.add('iron_bar', 60);
+      state.addGold(75);
+      state.gatheringInventory.add('iron_bar', 25);
       expect(
         state.upgradeTool('pickaxe:iron'),
         ToolActionResult.maxUpgradeReached,
       );
       expect(state.ownedTool('pickaxe:iron')?.upgradeLevel, 5);
-      expect(state.gatheringInventory.quantityOf('iron_bar'), 60);
-      expect(state.gold, 150);
+      expect(state.gatheringInventory.quantityOf('iron_bar'), 25);
+      expect(state.gold, 75);
     });
   });
 
@@ -152,27 +152,27 @@ void main() {
             discipline: GatheringDiscipline.mining,
             skillId: 'mining',
             toolId: 'pickaxe:iron',
-            recipe: {'iron_bar': 60},
+            recipe: {'iron_bar': 10},
           ),
           (
             discipline: GatheringDiscipline.woodcutting,
             skillId: 'woodcutting',
             toolId: 'axe:iron',
-            recipe: {'mahogany_log': 60, 'iron_bar': 30},
+            recipe: {'mahogany_log': 10, 'iron_bar': 5},
           ),
           (
             discipline: GatheringDiscipline.fishing,
             skillId: 'fishing',
             toolId: 'rod:reinforced',
-            recipe: {'mahogany_log': 40, 'iron_bar': 20},
+            recipe: {'mahogany_log': 6, 'iron_bar': 3},
           ),
         ];
 
     for (final scenario in scenarios) {
       test('acquires and equips ${scenario.discipline.name} tools', () {
         final state = GameState();
-        state.skills[scenario.skillId]!.level = 20;
-        state.addGold(600);
+        state.skills[scenario.skillId]!.level = 5;
+        state.addGold(20);
         final experienceBefore = state.skills[scenario.skillId]!.experience;
         for (final ingredient in scenario.recipe.entries) {
           state.gatheringInventory.add(ingredient.key, ingredient.value);
