@@ -19,7 +19,8 @@ void main() {
 
   Widget app({
     required GameState state,
-    required void Function(String recipeId, int quantity) onStart,
+    required void Function(String recipeId, int quantity, bool repeat)
+    onStart,
     required ValueChanged<String> onEat,
     required VoidCallback onCancel,
   }) {
@@ -61,7 +62,7 @@ void main() {
     await tester.pumpWidget(
       app(
         state: state,
-        onStart: (recipeId, quantity) => starts.add('$recipeId:$quantity'),
+        onStart: (recipeId, quantity, _) => starts.add('$recipeId:$quantity'),
         onEat: foods.add,
         onCancel: () {},
       ),
@@ -134,7 +135,7 @@ void main() {
     await tester.pumpWidget(
       app(
         state: state,
-        onStart: (recipeId, quantity) => starts.add('$recipeId:$quantity'),
+        onStart: (recipeId, quantity, _) => starts.add('$recipeId:$quantity'),
         onEat: foods.add,
         onCancel: () {},
       ),
@@ -167,7 +168,7 @@ void main() {
     await tester.pumpWidget(
       app(
         state: state,
-        onStart: (_, _) {},
+        onStart: (_, _, _) {},
         onEat: (_) {},
         onCancel: () => cancelled = true,
       ),
@@ -183,7 +184,7 @@ void main() {
     await tester.pumpWidget(
       app(
         state: state,
-        onStart: (_, _) {},
+        onStart: (_, _, _) {},
         onEat: (_) {},
         onCancel: () => cancelled = true,
       ),
@@ -201,7 +202,7 @@ void main() {
     await tester.pumpWidget(
       app(
         state: state,
-        onStart: (_, _) {},
+        onStart: (_, _, _) {},
         onEat: (_) {},
         onCancel: () => cancelled = true,
       ),
@@ -237,7 +238,7 @@ void main() {
     await tester.pumpWidget(
       app(
         state: state,
-        onStart: (_, _) {},
+        onStart: (_, _, _) {},
         onEat: (_) {},
         onCancel: () {},
       ),
@@ -279,7 +280,7 @@ void main() {
     await tester.pumpWidget(
       app(
         state: state,
-        onStart: (_, _) {},
+        onStart: (_, _, _) {},
         onEat: (_) {},
         onCancel: () {},
       ),
@@ -312,7 +313,7 @@ void main() {
     await tester.pumpWidget(
       app(
         state: state,
-        onStart: (_, _) {},
+        onStart: (_, _, _) {},
         onEat: (_) {},
         onCancel: () {},
       ),
@@ -337,4 +338,46 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'toggling produção contínua passes repeat=true to onStartProcessing',
+    (tester) async {
+      configureMobileView(tester);
+      final state = GameState();
+      final smelting = SmeltingRecipeCatalog.all.first;
+      for (final entry in smelting.cost.multipliedBy(1).entries) {
+        state.gatheringInventory.add(entry.key, entry.value);
+      }
+
+      final starts = <bool>[];
+      await tester.pumpWidget(
+        app(
+          state: state,
+          onStart: (_, _, repeat) => starts.add(repeat),
+          onEat: (_) {},
+          onCancel: () {},
+        ),
+      );
+
+      final start = find.byKey(
+        ValueKey<String>('processing-start-${smelting.id}'),
+      );
+      await tester.ensureVisible(start);
+      await tester.tap(start);
+      expect(starts, [false]);
+
+      final repeatToggle = find.byKey(
+        const ValueKey<String>('processing-repeat'),
+      );
+      await tester.ensureVisible(repeatToggle);
+      await tester.tap(repeatToggle);
+      await tester.pump();
+
+      await tester.ensureVisible(start);
+      await tester.tap(start);
+
+      expect(starts, [false, true]);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

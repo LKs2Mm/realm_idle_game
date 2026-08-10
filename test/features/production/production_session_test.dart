@@ -43,4 +43,33 @@ void main() {
       const Duration(hours: 24).inMilliseconds,
     );
   });
+
+  test('repeatWhenDone defaults to false and round-trips through JSON', () {
+    final defaultSession = buildSession(lastProcessedAt: 0);
+    expect(defaultSession.repeatWhenDone, isFalse);
+
+    final repeatingSession = ProductionSession(
+      kind: ProductionKind.smelting,
+      recipeId: 'smelt_copper',
+      displayName: 'Barra de cobre',
+      quantity: 1,
+      durationMilliseconds: 4000,
+      timeRemainingMilliseconds: 4000,
+      lastProcessedAt: 0,
+      goldCost: 0,
+      resourceCost: const {'copper': 1},
+      skillId: 'smithing',
+      experience: 5,
+      repeatWhenDone: true,
+    );
+
+    expect(
+      ProductionSession.fromJson(repeatingSession.toJson()).repeatWhenDone,
+      isTrue,
+    );
+
+    final legacyJson = Map<String, dynamic>.from(defaultSession.toJson())
+      ..remove('repeatWhenDone');
+    expect(ProductionSession.fromJson(legacyJson).repeatWhenDone, isFalse);
+  });
 }

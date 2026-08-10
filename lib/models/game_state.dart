@@ -775,6 +775,7 @@ class GameState {
     String recipeId, {
     int quantity = 1,
     DateTime? at,
+    bool repeat = false,
   }) {
     final recipe = ProcessingRecipeCatalog.byId(recipeId);
     if (recipe == null) return ProductionStartResult.unknownRecipe;
@@ -807,6 +808,7 @@ class GameState {
       resourceCost: cost,
       skillId: recipe.skillId,
       experience: recipe.experience * quantity,
+      repeatWhenDone: repeat,
     );
     return ProductionStartResult.success;
   }

@@ -229,8 +229,12 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
     _finishProductionStart(result);
   }
 
-  void _startProcessing(String recipeId, int quantity) {
-    final result = _gameState.startProcessing(recipeId, quantity: quantity);
+  void _startProcessing(String recipeId, int quantity, bool repeat) {
+    final result = _gameState.startProcessing(
+      recipeId,
+      quantity: quantity,
+      repeat: repeat,
+    );
     _finishProductionStart(result);
   }
 
@@ -528,8 +532,8 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
       onUsePotion: (id) => after(() => _usePotion(id)),
       onCraftSpell: (id) => after(() => _craftSpell(id)),
       onUseSpell: (id) => after(() => _useSpell(id)),
-      onStartProcessing: (id, quantity) =>
-          after(() => _startProcessing(id, quantity)),
+      onStartProcessing: (id, quantity, repeat) =>
+          after(() => _startProcessing(id, quantity, repeat)),
       onEatFood: (id) => after(() => _eatCookedFish(id)),
     );
   }

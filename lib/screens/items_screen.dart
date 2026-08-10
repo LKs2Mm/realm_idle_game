@@ -41,7 +41,8 @@ class ItemsScreen extends StatefulWidget {
   final ValueChanged<String> onUsePotion;
   final ValueChanged<String> onCraftSpell;
   final ValueChanged<String> onUseSpell;
-  final void Function(String recipeId, int quantity) onStartProcessing;
+  final void Function(String recipeId, int quantity, bool repeat)
+  onStartProcessing;
   final ValueChanged<String> onEatFood;
 
   const ItemsScreen({

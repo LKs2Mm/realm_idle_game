@@ -10,7 +10,8 @@ import 'package:realm_idle_game/models/game_state.dart';
 
 class ProcessingPanel extends StatefulWidget {
   final GameState gameState;
-  final void Function(String recipeId, int quantity) onStartProcessing;
+  final void Function(String recipeId, int quantity, bool repeat)
+  onStartProcessing;
   final ValueChanged<String> onEatFood;
   final VoidCallback onCancelProduction;
 
@@ -29,6 +30,7 @@ class ProcessingPanel extends StatefulWidget {
 class _ProcessingPanelState extends State<ProcessingPanel> {
   ProcessingKind _selectedKind = ProcessingKind.smelting;
   int _batchQuantity = 1;
+  bool _repeat = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +53,11 @@ class _ProcessingPanelState extends State<ProcessingPanel> {
           child: _ProcessingControls(
             selectedKind: _selectedKind,
             batchQuantity: _batchQuantity,
+            repeat: _repeat,
             onKindChanged: (kind) => setState(() => _selectedKind = kind),
             onBatchChanged: (quantity) =>
                 setState(() => _batchQuantity = quantity),
+            onRepeatChanged: (repeat) => setState(() => _repeat = repeat),
           ),
         ),
         if (session != null)
@@ -79,7 +83,8 @@ class _ProcessingPanelState extends State<ProcessingPanel> {
                 recipe: recipe,
                 batchQuantity: _batchQuantity,
                 gameState: state,
-                onStart: widget.onStartProcessing,
+                onStart: (recipeId, quantity) =>
+                    widget.onStartProcessing(recipeId, quantity, _repeat),
                 onEatFood: widget.onEatFood,
               );
             },
@@ -178,14 +183,18 @@ class _HealthHeader extends StatelessWidget {
 class _ProcessingControls extends StatelessWidget {
   final ProcessingKind selectedKind;
   final int batchQuantity;
+  final bool repeat;
   final ValueChanged<ProcessingKind> onKindChanged;
   final ValueChanged<int> onBatchChanged;
+  final ValueChanged<bool> onRepeatChanged;
 
   const _ProcessingControls({
     required this.selectedKind,
     required this.batchQuantity,
+    required this.repeat,
     required this.onKindChanged,
     required this.onBatchChanged,
+    required this.onRepeatChanged,
   });
 
   @override
@@ -249,6 +258,19 @@ class _ProcessingControls extends StatelessWidget {
             ],
           ],
         ),
+        SwitchListTile(
+          key: const ValueKey<String>('processing-repeat'),
+          contentPadding: EdgeInsets.zero,
+          dense: true,
+          value: repeat,
+          onChanged: onRepeatChanged,
+          title: const Text('Produção contínua'),
+          subtitle: const Text(
+            'Reinicia o mesmo lote sozinho até faltar material.',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }
@@ -292,7 +314,10 @@ class _ActiveProcessingPanel extends StatelessWidget {
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         Text(
-                          '${session.kind.displayName} • lote ×${session.quantity}',
+                          '${session.kind.displayName} • lote ×${session.quantity}'
+                          '${session.repeatWhenDone ? ' • contínua' : ''}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: color,

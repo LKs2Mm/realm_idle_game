@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:realm_idle_game/features/processing/data/processing_recipe_catalog.dart';
 import 'package:realm_idle_game/features/production/models/production_session.dart';
 import 'package:realm_idle_game/models/game_state.dart';
 
@@ -9,6 +10,8 @@ typedef ProductionUpdateCallback =
 class ProductionAdvanceResult {
   int elapsedMilliseconds = 0;
   ProductionReward? reward;
+  bool repeated = false;
+  bool repeatStoppedForResources = false;
 
   bool get hasReward => reward != null;
 }
@@ -77,10 +80,48 @@ class ProductionService {
       return result;
     }
 
+    final repeatWhenDone = session.repeatWhenDone;
     result.reward = gameState.completeProduction(at: timestamp);
-    _timer?.cancel();
+    final reward = result.reward;
+
+    if (reward != null && repeatWhenDone) {
+      result.repeated = _tryRestart(reward, timestamp);
+      result.repeatStoppedForResources = !result.repeated;
+    }
+
+    if (gameState.activeProductionSession == null) {
+      _timer?.cancel();
+    } else {
+      _ensureTimer();
+    }
     if (notify) onUpdate(gameState, true);
     return result;
+  }
+
+  /// Tenta reiniciar a mesma receita/quantidade que acabou de concluir,
+  /// pra "produção contínua". Não tenta recuperar tempo offline perdido —
+  /// só reinicia um lote novo, do zero, a partir de [timestamp] — mesmo
+  /// comportamento que a produção já tinha antes de sobras de tempo
+  /// ociosas serem descartadas em uma pausa longa.
+  bool _tryRestart(ProductionReward reward, DateTime timestamp) {
+    final recipe = ProcessingRecipeCatalog.byId(reward.recipeId);
+    if (recipe == null) return false;
+
+    final hasLevel =
+        (gameState.skills[recipe.skillId]?.level ?? 1) >= recipe.requiredLevel;
+    final canAfford = recipe.cost.canAfford(
+      gameState.gatheringInventory.resources,
+      batches: reward.quantity,
+    );
+    if (!hasLevel || !canAfford) return false;
+
+    final startResult = gameState.startProcessing(
+      reward.recipeId,
+      quantity: reward.quantity,
+      at: timestamp,
+      repeat: true,
+    );
+    return startResult == ProductionStartResult.success;
   }
 
   void _ensureTimer() {

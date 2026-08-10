@@ -79,6 +79,7 @@ class ProductionSession {
   final Map<String, int> resourceCost;
   final String skillId;
   final double experience;
+  final bool repeatWhenDone;
 
   ProductionSession({
     required this.kind,
@@ -92,6 +93,7 @@ class ProductionSession {
     required Map<String, int> resourceCost,
     required this.skillId,
     required this.experience,
+    this.repeatWhenDone = false,
   }) : resourceCost = Map.unmodifiable(resourceCost);
 
   double get progress {
@@ -120,6 +122,7 @@ class ProductionSession {
     'resourceCost': resourceCost,
     'skillId': skillId,
     'experience': experience,
+    'repeatWhenDone': repeatWhenDone,
   };
 
   factory ProductionSession.fromJson(Object? json) {
@@ -184,6 +187,7 @@ class ProductionSession {
       resourceCost: resourceCost,
       skillId: skillId,
       experience: experience,
+      repeatWhenDone: json['repeatWhenDone'] == true,
     );
   }
 
