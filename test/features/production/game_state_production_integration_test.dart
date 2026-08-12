@@ -9,6 +9,7 @@ import 'package:realm_idle_game/features/equipment/models/equipment_models.dart'
 import 'package:realm_idle_game/features/production/models/production_session.dart';
 import 'package:realm_idle_game/features/production/services/production_service.dart';
 import 'package:realm_idle_game/models/game_state.dart';
+import 'package:realm_idle_game/models/skill.dart';
 
 void main() {
   EquipmentDefinition starterEquipment({
@@ -85,9 +86,20 @@ void main() {
       expect(completed.reward?.experience, definition.workshopExperience);
       expect(state.activeProductionSession, isNull);
       expect(state.equipment.inventory.itemQuantity(definition.id), 1);
+      final expectedSkill =
+          Skill(
+              id: definition.workshop.skillId,
+              name: definition.workshop.skillId,
+              category: SkillCategory.processing,
+            )
+            ..addExperience(definition.workshopExperience);
+      expect(
+        state.skills[definition.workshop.skillId]!.level,
+        expectedSkill.level,
+      );
       expect(
         state.skills[definition.workshop.skillId]!.experience,
-        definition.workshopExperience,
+        expectedSkill.experience,
       );
       expect(state.profile.totalCrafts, 1);
       expect(updates, [false, true]);
@@ -133,7 +145,7 @@ void main() {
       expect(state.activeHeroClass, HeroClass.assassin);
       expect(state.classLevel(HeroClass.knight), 2);
       expect(state.classLevel(HeroClass.assassin), 1);
-      expect(state.skills['knight_mastery']!.experience, 2);
+      expect(state.skills['knight_mastery']!.experience, 52);
       expect(state.skills['assassin_mastery']!.experience, 3);
       expect(state.skills['mage_mastery']!.experience, 0);
       expect(state.skills['archer_mastery']!.experience, 0);

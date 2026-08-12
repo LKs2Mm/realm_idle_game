@@ -21,7 +21,7 @@ A navegação principal está dividida em sete menus: **Habilidades**,
 - O painel de Habilidades acompanha Mineração, Corte de madeira, Pesca,
   Culinária, Forja, Artesanato, Ofício do Véu, Arcanismo, Alquimia, Ataque,
   Defesa, Magia e as quatro maestrias de classe.
-- A progressão usa a curva `100 + 40n + 10n²`, em que `n = nível - 1`, e o XP
+- A progressão usa a curva `50 + 20n + 10n²`, em que `n = nível - 1`, e o XP
   é armazenado em décimos para preservar ganhos pequenos sem saltos visuais.
 
 ## Colheita
@@ -44,7 +44,7 @@ A navegação principal está dividida em sete menus: **Habilidades**,
 - O Carvão mineral é liberado no nível 5, concede `6,8 XP` em `4s` e funciona
   como combustível das receitas de Fundição e Culinária.
 - Depois do recurso inicial, novos minérios são liberados a cada 10 níveis.
-- São necessários `3.389.430 XP` para chegar ao nível 100, cerca de 218 horas
+- São necessários `3.287.460 XP` para chegar ao nível 100, cerca de 211 horas
   contínuas nas taxas-base usando sempre o melhor minério liberado.
 - A Essência rúnica é a base das inscrições mágicas do Arcanista; minérios de
   tiers superiores também abastecem equipamentos, ferramentas, magias e
@@ -89,7 +89,7 @@ até as águas abissais e rúnicas:
 - Ouro, XP de Ataque e XP da classe ativa são concedidos somente após uma
   vitória completa. O combate recupera em lote as vitórias ocorridas offline.
 - Seis inimigos sombrios são liberados nos níveis de Ataque 1, 10, 20, 40, 60
-  e 80. O melhor alvo disponível leva aproximadamente 150 horas do nível 1 ao
+  e 80. O melhor alvo disponível leva aproximadamente 144 horas do nível 1 ao
   100 de Ataque.
 - A renda cresce de 30 moedas por minuto no Rato Sepulcral até 5.000 moedas por
   minuto no Lorde das Runas. A moeda é distinta do recurso `Minério de ouro`.

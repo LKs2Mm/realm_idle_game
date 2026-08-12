@@ -51,7 +51,7 @@ void main() {
   });
 
   test(
-    'best available encounters take about 150 hours from level 1 to 100',
+    'best available encounters take about 145 hours from level 1 to 100',
     () {
       var totalMinutes = 0.0;
       const milestones = [10, 20, 40, 60, 80, 100];
@@ -70,7 +70,7 @@ void main() {
       }
 
       final totalHours = totalMinutes / 60;
-      expect(totalHours, inInclusiveRange(148, 153));
+      expect(totalHours, inInclusiveRange(140, 148));
     },
   );
 

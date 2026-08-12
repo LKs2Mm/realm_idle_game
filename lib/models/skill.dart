@@ -47,7 +47,7 @@ class Skill {
 
   static int experienceRequiredForLevel(int level) {
     final offset = (level < 1 ? 1 : level) - 1;
-    return 100 + (40 * offset) + (10 * offset * offset);
+    return 50 + (20 * offset) + (10 * offset * offset);
   }
 
   static int totalExperienceToReachLevel(int targetLevel) {

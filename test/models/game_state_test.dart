@@ -114,11 +114,11 @@ void main() {
     });
 
     test('uses a long-form level curve through level 100', () {
-      expect(Skill.experienceRequiredForLevel(1), 100);
-      expect(Skill.experienceRequiredForLevel(10), 1270);
-      expect(Skill.experienceRequiredForLevel(50), 26070);
-      expect(Skill.experienceRequiredForLevel(100), 102070);
-      expect(Skill.totalExperienceToReachLevel(100), 3389430);
+      expect(Skill.experienceRequiredForLevel(1), 50);
+      expect(Skill.experienceRequiredForLevel(10), 1040);
+      expect(Skill.experienceRequiredForLevel(50), 25040);
+      expect(Skill.experienceRequiredForLevel(100), 100040);
+      expect(Skill.totalExperienceToReachLevel(100), 3287460);
 
       final resources = GatheringResource.forDiscipline(
         GatheringDiscipline.mining,
@@ -160,8 +160,8 @@ void main() {
       }
 
       final optimizedTrainingHours = optimizedTrainingSeconds / 3600;
-      expect(optimizedTrainingHours, greaterThan(145));
-      expect(optimizedTrainingHours, lessThan(155));
+      expect(optimizedTrainingHours, greaterThan(135));
+      expect(optimizedTrainingHours, lessThan(150));
     });
   });
 
@@ -246,8 +246,8 @@ void main() {
       expect(state.gold, 250);
       expect(state.skills['mining']!.name, 'Mineração');
       expect(state.skills['mining']!.level, 5);
-      expect(state.skills['mining']!.experience, 48.0);
-      expect(state.skills['mining']!.experienceToNextLevel, 420);
+      expect(state.skills['mining']!.experience, 33.1);
+      expect(state.skills['mining']!.experienceToNextLevel, 290);
       expect(state.gatheringInventory.quantityOf('copper'), 12);
       expect(state.ownedTool('pickaxe:wooden')?.upgradeLevel, 4);
       expect(state.tools.ownedById, hasLength(3));
@@ -288,7 +288,7 @@ void main() {
       );
 
       expect(restored.skills['mining']!.experience, 5.6);
-      expect(restored.skills['mining']!.experienceToNextLevel, 100);
+      expect(restored.skills['mining']!.experienceToNextLevel, 50);
     });
 
     test('round-trips an active combat hunt and wallet balance', () {

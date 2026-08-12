@@ -84,11 +84,11 @@ void main() {
 
     await tester.pump(const Duration(milliseconds: 160));
     expect(barValue(), greaterThan(0));
-    expect(barValue(), lessThan(0.056));
+    expect(barValue(), lessThan(0.112));
 
     await tester.pump(const Duration(milliseconds: 400));
-    expect(barValue(), closeTo(0.056, 0.000001));
-    expect(find.text('5,6 / 100 XP'), findsOneWidget);
+    expect(barValue(), closeTo(0.112, 0.000001));
+    expect(find.text('5,6 / 50 XP'), findsOneWidget);
   });
 
   testWidgets('level-up starts at the real new-level progress', (tester) async {
@@ -96,7 +96,7 @@ void main() {
       id: 'mining',
       name: 'Mineração',
       category: SkillCategory.gathering,
-      experience: 99.4,
+      experience: 49.4,
     );
 
     Widget buildCard() => MaterialApp(
@@ -118,6 +118,6 @@ void main() {
     );
     expect(skill.level, 2);
     expect(progress.value, 0);
-    expect(find.text('0 / 150 XP'), findsOneWidget);
+    expect(find.text('0 / 80 XP'), findsOneWidget);
   });
 }
