@@ -124,20 +124,14 @@ class _SkillVisual extends StatelessWidget {
     );
   }
 
+  // Só cai aqui quando MedievalAssets.forSkill() não tem arte própria pra
+  // essa skill (hoje: attack/defense/magic/cooking) — as demais já têm um
+  // retrato de oficina/classe reaproveitado (ver forSkill).
   IconData _skillIcon(String skillId, SkillCategory category) {
     return switch (skillId) {
-      'smithing' => Icons.hardware_outlined,
-      'crafting' => Icons.handyman_outlined,
-      'shadowcraft' => Icons.visibility_off_outlined,
-      'arcanism' => Icons.auto_awesome_outlined,
-      'alchemy' => Icons.science_outlined,
       'attack' => Icons.sports_martial_arts,
       'defense' => Icons.shield_outlined,
       'magic' => Icons.auto_fix_high,
-      'knight_mastery' => Icons.shield_outlined,
-      'assassin_mastery' => Icons.content_cut,
-      'mage_mastery' => Icons.auto_fix_high,
-      'archer_mastery' => Icons.gps_fixed,
       _ => switch (category) {
         SkillCategory.gathering => Icons.grass,
         SkillCategory.processing => Icons.build,

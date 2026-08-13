@@ -18,28 +18,24 @@ class SkillsScreen extends StatelessWidget {
       heroClass: HeroClass.knight,
       skillId: 'knight_mastery',
       epithet: 'Juramento de Ferro',
-      icon: Icons.shield_outlined,
       color: Color(0xFF98A8AD),
     ),
     _ClassPath(
       heroClass: HeroClass.assassin,
       skillId: 'assassin_mastery',
       epithet: 'Pacto do Véu',
-      icon: Icons.visibility_off_outlined,
       color: Color(0xFF9B5966),
     ),
     _ClassPath(
       heroClass: HeroClass.mage,
       skillId: 'mage_mastery',
       epithet: 'Círculo Arcano',
-      icon: Icons.auto_fix_high,
       color: Color(0xFF78A9B4),
     ),
     _ClassPath(
       heroClass: HeroClass.archer,
       skillId: 'archer_mastery',
       epithet: 'Olho da Mata',
-      icon: Icons.adjust,
       color: Color(0xFF82956B),
     ),
   ];
@@ -306,7 +302,13 @@ class _ClassMasterySeal extends StatelessWidget {
               border: Border.all(color: path.color.withValues(alpha: 0.72)),
               shape: BoxShape.circle,
             ),
-            child: Icon(path.icon, size: 18, color: path.color),
+            child: ClipOval(
+              child: MedievalEmblem(
+                assetPath: MedievalAssets.classAsset(path.heroClass.saveKey),
+                size: 34,
+                semanticLabel: path.heroClass.displayName,
+              ),
+            ),
           ),
           const SizedBox(width: 7),
           Expanded(
@@ -367,14 +369,12 @@ class _ClassPath {
   final HeroClass heroClass;
   final String skillId;
   final String epithet;
-  final IconData icon;
   final Color color;
 
   const _ClassPath({
     required this.heroClass,
     required this.skillId,
     required this.epithet,
-    required this.icon,
     required this.color,
   });
 }

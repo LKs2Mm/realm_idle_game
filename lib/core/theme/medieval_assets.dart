@@ -19,6 +19,15 @@ abstract final class MedievalAssets {
     'mining' => mining,
     'woodcutting' => woodcutting,
     'fishing' => fishing,
+    'smithing' => workshopAsset('blacksmith'),
+    'crafting' => workshopAsset('artisan'),
+    'shadowcraft' => workshopAsset('veil_guild'),
+    'arcanism' => workshopAsset('arcanist'),
+    'alchemy' => alchemyLab,
+    'knight_mastery' => classAsset('knight'),
+    'assassin_mastery' => classAsset('assassin'),
+    'mage_mastery' => classAsset('mage'),
+    'archer_mastery' => classAsset('archer'),
     _ => null,
   };
 
