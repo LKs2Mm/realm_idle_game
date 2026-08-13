@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm_idle_game/core/theme/app_theme.dart';
 import 'package:realm_idle_game/features/content/models/world_region.dart';
@@ -83,13 +82,13 @@ void main() {
     final unlockedSemantics = tester.getSemantics(
       find.bySemanticsLabel('Encruzilhada Cinzenta'),
     );
-    expect(unlockedSemantics.hasFlag(SemanticsFlag.isButton), isTrue);
-    expect(unlockedSemantics.hasFlag(SemanticsFlag.isEnabled), isTrue);
+    expect(unlockedSemantics.flagsCollection.isButton, isTrue);
+    expect(unlockedSemantics.flagsCollection.isEnabled.toBoolOrNull(), isTrue);
 
     final lockedSemantics = tester.getSemantics(
       find.bySemanticsLabel('Bastião Obsidiano'),
     );
-    expect(lockedSemantics.hasFlag(SemanticsFlag.isEnabled), isFalse);
+    expect(lockedSemantics.flagsCollection.isEnabled.toBoolOrNull(), isFalse);
     expect(lockedSemantics.value, contains('bloqueada'));
     expect(lockedSemantics.value, contains('Combate 20'));
 

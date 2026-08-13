@@ -20,6 +20,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // flutter_local_notifications requires this on the consuming :app
+        // module too, not just inside the plugin's own build.gradle.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     defaultConfig {
@@ -60,6 +63,12 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
+}
+
+dependencies {
+    // Version pinned to match what flutter_local_notifications' own
+    // android/build.gradle depends on.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 flutter {
