@@ -775,89 +775,99 @@ class _GameShellState extends State<GameShell> with WidgetsBindingObserver {
     final showAllNavigationLabels =
         mediaQuery.size.width >= 390 && mediaQuery.textScaler.scale(1) <= 1.15;
 
-    return Stack(
-      children: [
-        Scaffold(
-          backgroundColor: AppTheme.darkBackground,
-          body: MedievalBackground(
-            child: Column(
-              children: [
-                HeaderWidget(gameState: _gameState),
-                Expanded(child: _buildScreen()),
-              ],
-            ),
-          ),
-          bottomNavigationBar: DecoratedBox(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [AppTheme.darkCardRaised, AppTheme.voidBlack],
+    return Listener(
+      // A primeira tentativa de tocar música (em initState, antes de
+      // qualquer gesto do usuário) costuma ser bloqueada pela política de
+      // autoplay do navegador. Qualquer toque na tela conta como gesto
+      // real, então tentamos de novo aqui — se a música já estiver
+      // tocando, playMusic() é um no-op (dedup por _currentMusicAsset).
+      onPointerDown: (_) => _updateMusicForScreen(),
+      behavior: HitTestBehavior.translucent,
+      child: Stack(
+        children: [
+          Scaffold(
+            backgroundColor: AppTheme.darkBackground,
+            body: MedievalBackground(
+              child: Column(
+                children: [
+                  HeaderWidget(gameState: _gameState),
+                  Expanded(child: _buildScreen()),
+                ],
               ),
-              border: Border(top: BorderSide(color: AppTheme.darkCardBorder)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black,
-                  blurRadius: 12,
-                  offset: Offset(0, -4),
-                ),
-              ],
             ),
-            child: BottomNavigationBar(
-              currentIndex: _bottomNavScreenIndices
-                  .indexOf(_selectedIndex)
-                  .clamp(0, _bottomNavScreenIndices.length - 1),
-              onTap: (visibleIndex) {
-                setState(
-                  () => _selectedIndex = _bottomNavScreenIndices[visibleIndex],
-                );
-                _updateMusicForScreen();
-              },
-              selectedFontSize: 9,
-              unselectedFontSize: 8,
-              showSelectedLabels: true,
-              showUnselectedLabels: showAllNavigationLabels,
-              iconSize: 22,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.psychology),
-                  activeIcon: RunicNavIcon(icon: Icons.psychology),
-                  label: 'Habilidades',
+            bottomNavigationBar: DecoratedBox(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppTheme.darkCardRaised, AppTheme.voidBlack],
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.sports_mma),
-                  activeIcon: RunicNavIcon(icon: Icons.sports_mma),
-                  label: 'Combate',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.backpack),
-                  activeIcon: RunicNavIcon(icon: Icons.backpack),
-                  label: 'Itens',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.map),
-                  activeIcon: RunicNavIcon(icon: Icons.map),
-                  label: 'Mapas',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.build),
-                  activeIcon: RunicNavIcon(icon: Icons.build),
-                  label: 'Ferramentas',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person),
-                  activeIcon: RunicNavIcon(icon: Icons.person),
-                  label: 'Conta',
-                ),
-              ],
+                border: Border(top: BorderSide(color: AppTheme.darkCardBorder)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black,
+                    blurRadius: 12,
+                    offset: Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: BottomNavigationBar(
+                currentIndex: _bottomNavScreenIndices
+                    .indexOf(_selectedIndex)
+                    .clamp(0, _bottomNavScreenIndices.length - 1),
+                onTap: (visibleIndex) {
+                  setState(
+                    () =>
+                        _selectedIndex = _bottomNavScreenIndices[visibleIndex],
+                  );
+                  _updateMusicForScreen();
+                },
+                selectedFontSize: 9,
+                unselectedFontSize: 8,
+                showSelectedLabels: true,
+                showUnselectedLabels: showAllNavigationLabels,
+                iconSize: 22,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.psychology),
+                    activeIcon: RunicNavIcon(icon: Icons.psychology),
+                    label: 'Habilidades',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.sports_mma),
+                    activeIcon: RunicNavIcon(icon: Icons.sports_mma),
+                    label: 'Combate',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.backpack),
+                    activeIcon: RunicNavIcon(icon: Icons.backpack),
+                    label: 'Itens',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.map),
+                    activeIcon: RunicNavIcon(icon: Icons.map),
+                    label: 'Mapas',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.build),
+                    activeIcon: RunicNavIcon(icon: Icons.build),
+                    label: 'Ferramentas',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    activeIcon: RunicNavIcon(icon: Icons.person),
+                    label: 'Conta',
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        if (_showOnboarding)
-          Positioned.fill(
-            child: OnboardingOverlay(onFinished: _completeOnboarding),
-          ),
-      ],
+          if (_showOnboarding)
+            Positioned.fill(
+              child: OnboardingOverlay(onFinished: _completeOnboarding),
+            ),
+        ],
+      ),
     );
   }
 }

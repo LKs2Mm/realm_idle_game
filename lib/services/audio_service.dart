@@ -29,13 +29,18 @@ abstract final class AudioService {
 
   static Future<void> playMusic(String assetPath) async {
     if (_currentMusicAsset == assetPath) return;
-    _currentMusicAsset = assetPath;
     await _safe(() async {
       await _musicPlayer.stop();
       await _musicPlayer.play(
         AssetSource(assetPath),
         volume: _muted ? 0 : _musicVolume,
       );
+      // Só marca como "tocando" depois que .play() não lança exceção. Se
+      // isso rodar antes do primeiro gesto do usuário, o navegador pode
+      // bloquear o autoplay e lançar aqui — nesse caso _currentMusicAsset
+      // continua null, permitindo que uma tentativa futura (após um gesto
+      // real) tente de novo em vez de ficar presa achando que já tocou.
+      _currentMusicAsset = assetPath;
     });
   }
 
